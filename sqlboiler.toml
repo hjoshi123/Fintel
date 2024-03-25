@@ -1,0 +1,14 @@
+output = "pkg/models"
+wipe = true
+no-tests = true
+add-enum-types = true
+pkgname = "models"
+add-global-variants = true
+
+[psql]
+dbname = "fintel"
+host = "0.0.0.0"
+port = 5439
+user = "dev"
+pass = "dev124342"
+sslmode = "disable"

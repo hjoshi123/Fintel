@@ -1,0 +1,8 @@
+CREATE TABLE tickers(
+	id SERIAL PRIMARY KEY,
+	name text NOT NULL,
+	ticker text NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(ticker)
+);

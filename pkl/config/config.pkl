@@ -1,0 +1,29 @@
+amends ".../AppConfig.pkl"
+
+DB {
+    dbHost = read("env:DB_HOST")
+    dbPort = read("env:DB_PORT")
+    dbName = read("env:DB_NAME")
+    dbAuth {
+        dbUser = read("env:DB_USER")
+        dbPassword = read("env:DB_PASSWORD")
+    }
+}
+
+kafka {
+    brokers = read("env:KAFKA_BROKERS")
+    topic = read("env:KAFKA_TOPIC")
+    group = read("env:KAFKA_GROUP_ID")
+    clientID = read("env:KAFKA_CLIENT_ID")
+    saslEnable = true
+    saslMechanism = "PLAIN"
+    auth {
+        username = read("env:KAFKA_USERNAME")
+        password = read("env:KAFKA_PASSWORD")
+    }
+}
+
+environment = read("env:ENVIRONMENT")
+port = 8080
+logLevel = "debug"
+version = read("env:VERSION")

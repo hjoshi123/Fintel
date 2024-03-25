@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: sql_boiler_postgres
+    image: postgis/postgis:14-3.3
+    ports:
+      - 5439:5432
+    command:
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+    environment:
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=dev124342
+      - POSTGRES_DB=fintel

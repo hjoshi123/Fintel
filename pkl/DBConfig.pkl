@@ -1,0 +1,14 @@
+@go.Package { name = "github.com/hjoshi123/fintel/infra/config/dbconfig" }
+module com.github.hjoshi123.fintel.pkl.DBConfig
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.5.3#/go.pkl"
+
+class DBAuth {
+    dbUser: String
+    dbPassword: String
+}
+
+dbPort: String
+dbName: String
+dbHost: String
+dbAuth: DBAuth

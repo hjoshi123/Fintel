@@ -1,0 +1,19 @@
+@go.Package { name = "github.com/hjoshi123/fintel/infra/config/appconfig" }
+module com.github.hjoshi123.fintel.pkl.AppConfig
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.5.3#/go.pkl"
+import "DBConfig.pkl"
+import "KafkaConfig.pkl"
+
+typealias Port = UInt16(this > 0)
+
+environment: String = "development"
+version: String = "0.0.1"
+port: Port = 8080
+DB: DBConfig
+kafka: KafkaConfig
+alphaVantageApiKey: String
+
+typealias LogLevel = "error"|"warn"|"info"|"debug"
+
+logLevel: LogLevel
