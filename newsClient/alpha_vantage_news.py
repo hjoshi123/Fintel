@@ -38,8 +38,8 @@ def fetch_alpha_vantage_news(ticker, time_from, limit):
        response = requests.get(url)
        #print(response.json())
         # Return the JSON response if the request was successful
-    #    if response.status_code == 200:
-    #        return response.json()
+       if response.status_code == 200:
+           return response.json()
 
     except Exception as e:
         print(f"Request failed with exception {e}")
@@ -72,7 +72,7 @@ def ingest_news_from_file():
     producer = Producer(config)
     producer.produce("stocks.news.create", json.dumps(data))
     print(f"News from file ingested successfully!")
-    #producer.flush()
+    producer.flush()
     #print(f"News for {ticker} ingested successfully!")
 
 def main():

@@ -9,6 +9,7 @@ import datetime
 import os
 from dotenv import load_dotenv
 from praw.models import MoreComments
+from confluent_kafka import Producer
 from nltk.tokenize import sent_tokenize
 from iexfinance.stocks import Stock as IEXStock
 
@@ -17,6 +18,14 @@ sys.path.append('../sentimentService/')
 from vader_sentiment import SentimentIntensityAnalyzer
 
 load_dotenv()
+
+config = {
+    'bootstrap.servers': os.getenv('BOOTSTRAP_SERVERS'),
+    'security.protocol': 'SASL_SSL',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': os.getenv('CLOUD_KEY'),
+    'sasl.password': os.getenv('CLOUD_SECRET')
+}
 
 def setup(sub):
    if sub == "":
@@ -148,6 +157,15 @@ def calculate_ticker_sentiment(data):
    except Exception as e:
       print(f"Error in calculate_ticker_sentiment: {e}")
       return None, None
+   
+def ingest_reddit_data_to_kafka(data):
+   try:
+      producer = Producer(config)
+      producer.produce("stocks.social.create", json.dumps(data))
+      print(f"Reddit data ingested successfully!")
+      producer.flush()
+   except Exception as e:
+      print(f"Error in ingest_reddit_data_to_kafka: {e}")
 
 if __name__ == "__main__":
    try:
@@ -159,5 +177,6 @@ if __name__ == "__main__":
       res = run(sub, ticker,limit,company, time_from)
       with open('reddit_data.json', 'w') as f: 
          json.dump(res, f, indent=4)
+      ingest_reddit_data_to_kafka(res)
    except Exception as e:
       print(f"Error in main: {e}")
