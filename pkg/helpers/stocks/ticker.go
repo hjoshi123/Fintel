@@ -59,7 +59,10 @@ func GetLatestTickers(cmd *cobra.Command, args []string) error {
 	}
 
 	var wg sync.WaitGroup
-	for _, ticker := range tickers {
+	for i, ticker := range tickers {
+		if i%50 == 0 {
+			wg.Wait()
+		}
 		wg.Add(1)
 		go func(t *Ticker) {
 			defer wg.Done()
@@ -72,6 +75,10 @@ func GetLatestTickers(cmd *cobra.Command, args []string) error {
 }
 
 func getAndSaveTicker(ctx context.Context, ticker *Ticker) {
+	if ticker.AssetType != "Stock" {
+		return
+	}
+
 	tickerStore := datastore.NewTickerStore()
 	t := new(models.Ticker)
 
