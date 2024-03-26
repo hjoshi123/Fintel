@@ -7,6 +7,7 @@ require (
 	github.com/IBM/sarama v1.43.0
 	github.com/apple/pkl-go v0.6.0
 	github.com/friendsofgo/errors v0.9.2
+	github.com/gocarina/gocsv v0.0.0-20231116093920-b87c2d0e983a
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	github.com/rs/cors v1.10.1
