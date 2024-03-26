@@ -27,3 +27,4 @@ environment = read("env:ENVIRONMENT")
 port = 8080
 logLevel = "debug"
 version = read("env:VERSION")
+alphaVantageApiKey = read("env:ALPHA_VANTAGE_API_KEY")
