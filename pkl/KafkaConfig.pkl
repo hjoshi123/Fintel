@@ -11,6 +11,7 @@ class KafkaAuth {
 clientID: String
 brokers: String
 group: String
+txnID: String
 topic: String
 saslEnable: Boolean = true
 saslMechanism: String = "PLAIN"
