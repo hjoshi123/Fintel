@@ -14,6 +14,8 @@ type KafkaConfig struct {
 
 	Group string `pkl:"group"`
 
+	TxnID string `pkl:"txnID"`
+
 	Topic string `pkl:"topic"`
 
 	SaslEnable bool `pkl:"saslEnable"`
