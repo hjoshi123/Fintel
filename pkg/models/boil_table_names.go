@@ -7,10 +7,12 @@ var TableNames = struct {
 	SpatialRefSys  string
 	StockSentiment string
 	Tickers        string
+	TopContent     string
 	Users          string
 }{
 	SpatialRefSys:  "spatial_ref_sys",
 	StockSentiment: "stock_sentiment",
 	Tickers:        "tickers",
+	TopContent:     "top_content",
 	Users:          "users",
 }
