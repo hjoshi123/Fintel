@@ -30,7 +30,7 @@ class SentimentAnalyzerService:
            
 
                 # calculate the average sentiment scores
-                total_sentiment, label = self.get_ticker_average_sentiment(title_sent[0], avg_body_sentiment, average_comment_sentiment)
+                total_sentiment, label,np,nn,n = self.get_ticker_average_sentiment(title_sent[0], avg_body_sentiment, average_comment_sentiment)
                 
 
         return total_sentiment, label
@@ -71,15 +71,19 @@ class SentimentAnalyzerService:
             'neu': (title['neu'] + body['neu'] + avg_comments['neu'])/3,
             'compound': (title['compound'] + body['compound'] + avg_comments['compound'])/3,
         }
-        
-        
+        np =0
+        nn=0
+        n=0
         if total_sentiment['compound'] >= 0.0:
             label = 'bullish'
+            np+=1
         elif total_sentiment['compound'] < 0.0:
             label = 'bearish'
+            nn+=1
         else:
             label = 'neutral'
-        return total_sentiment, label
+            n+=1
+        return total_sentiment, label , np, nn, n
         
         
         

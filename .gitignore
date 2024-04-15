@@ -21,3 +21,4 @@
 go.work
 .env
 */*/finsub
+*/*/__pycache__

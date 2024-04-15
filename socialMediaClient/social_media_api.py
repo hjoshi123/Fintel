@@ -84,7 +84,11 @@ def run(sub, ticker,company, time_from):
             title = post.title
             body = post.selftext
             post_url = post.url
-            comments = [c.body for c in post.comments]
+            comments = []
+            for c in post.comments:
+               if isinstance(c, MoreComments):
+                  continue
+               comments.append(c.body)
             all_text = [{"title": title, "body": body, "comments": comments}]
             sentiment, label = sentiment_analyzer_service.analyze_all_articles(all_text)
             post_time = datetime.datetime.fromtimestamp(post.created_utc).strftime('%Y-%m-%d %H:%M:%S')
@@ -93,7 +97,7 @@ def run(sub, ticker,company, time_from):
             reddit_data_dict["feed"].append({
                   "post_title": title,
                   "body": body,
-                  "comments": comments,
+                  "comments": len(comments),
                   "post_time": post_time,
                   "post_url": post_url,
                   "overall_sentiment_score": sentiment,
@@ -135,15 +139,15 @@ def ingest_reddit_data_to_kafka(data):
    except Exception as e:
       print(f"Error in ingest_reddit_data_to_kafka: {e}")
 
-if __name__ == "__main__":
-   try:
-      sub = "wallstreetbets"
-      ticker="BA"
-      company = "Boeing"
-      time_from = "week"
-      res = run(sub, ticker,company, time_from)
-      with open('reddit_data.json', 'w') as f: 
-         json.dump(res, f, indent=4)
-      # ingest_reddit_data_to_kafka(res)
-   except Exception as e:
-      print(f"Error in main: {e}")
+# if __name__ == "__main__":
+#    try:
+#       sub = "wallstreetbets"
+#       ticker="NVDA"
+#       company = "Nvidia"
+#       time_from = "day"
+#       res = run(sub, ticker,company, time_from)
+#       with open('reddit_data.json', 'w') as f: 
+#          json.dump(res, f, indent=4)
+#       #ingest_reddit_data_to_kafka(res)
+#    except Exception as e:
+#       print(f"Error in main: {e}")
