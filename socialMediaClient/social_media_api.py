@@ -104,31 +104,12 @@ def run(sub, ticker,company, time_from):
                   "overall_sentiment": label,
                   "num_comments": post.num_comments,
             })
-            
-      reddit_data_dict["items"] = len(reddit_data_dict["feed"])
-     # reddit_data_dict["overall_sentiment"], reddit_data_dict["overall_sentiment_score"] = calculate_ticker_sentiment(reddit_data_dict)
       reddit_data_dict["ticker"] = ticker
       reddit_data_dict["num_posts"] = len(new_posts)
       return reddit_data_dict
    except Exception as e:
       print(f"Error in run: {e}")
       return None
-
-def calculate_ticker_sentiment(data):
-   try:
-      total_count = 0
-      ticker_sentiment = {"bullish": 0, "bearish": 0, "neutral": 0}
-      for post in data["feed"]:
-         sentiment = post["overall_sentiment"]
-         ticker_sentiment[sentiment] += 1
-         total_count += 1
-      overall_sentiment = max(ticker_sentiment, key=ticker_sentiment.get)
-      for key, value in ticker_sentiment.items():
-         ticker_sentiment[key] = (value / total_count)
-      return ticker_sentiment, overall_sentiment
-   except Exception as e:
-      print(f"Error in calculate_ticker_sentiment: {e}")
-      return None, None
    
 def ingest_reddit_data_to_kafka(data):
    try:
