@@ -1,5 +1,5 @@
 output = "pkg/models"
-wipe = true
+wipe = false
 no-tests = true
 add-enum-types = true
 pkgname = "models"

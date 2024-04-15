@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/hjoshi123/fintel/infra/config"
 	"github.com/hjoshi123/fintel/infra/database"
 	"github.com/hjoshi123/fintel/infra/util"
 	"github.com/hjoshi123/fintel/pkg/cmd/run"
@@ -27,7 +26,6 @@ func Initialize() {
 
 func initConfig() {
 	ctx := finTasker.Context()
-	config.Load(ctx, "../../pkl/config/config.pkl")
 	_ = util.Logger()
 
 	_ = database.Connect()

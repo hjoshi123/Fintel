@@ -40,7 +40,6 @@ func Execute() error {
 
 func RunApiServer(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
-	config.Load(ctx, "../../pkl/config/config.pkl")
 	logger := util.Logger()
 
 	_ = database.Connect()
@@ -67,7 +66,7 @@ func RunApiServer(cmd *cobra.Command, args []string) error {
 
 		client.MigrateApply(ctx, &atlasexec.MigrateApplyParams{
 			URL: fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-				config.Spec.DB.DbAuth.DbUser, config.Spec.DB.DbAuth.DbPassword, config.Spec.DB.DbHost, config.Spec.DB.DbPort, config.Spec.DB.DbName),
+				config.Spec.DBUser, config.Spec.DBPassword, config.Spec.DBHost, config.Spec.DBPort, config.Spec.DBName),
 		})
 	}
 

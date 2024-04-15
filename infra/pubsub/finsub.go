@@ -13,15 +13,15 @@ import (
 
 func GetSaramaConfig() *sarama.Config {
 	sConfig := sarama.NewConfig()
-	sConfig.ClientID = config.Spec.Kafka.ClientID
+	sConfig.ClientID = config.Spec.KafkaClientID
 
 	sConfig.Net.MaxOpenRequests = 1
 
 	sConfig.Net.SASL.Enable = true
 	sConfig.Net.SASL.Handshake = true
 	sConfig.Net.SASL.Mechanism = "PLAIN"
-	sConfig.Net.SASL.User = config.Spec.Kafka.Auth.Username
-	sConfig.Net.SASL.Password = config.Spec.Kafka.Auth.Password
+	sConfig.Net.SASL.User = config.Spec.KafkaUsername
+	sConfig.Net.SASL.Password = config.Spec.KafkaPassword
 	sConfig.Net.TLS.Enable = true
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
@@ -36,7 +36,7 @@ func GetSaramaConfig() *sarama.Config {
 	sConfig.Producer.RequiredAcks = sarama.WaitForAll
 	sConfig.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 	sConfig.Producer.Transaction.Retry.Backoff = 10
-	sConfig.Producer.Transaction.ID = config.Spec.Kafka.TxnID
+	sConfig.Producer.Transaction.ID = config.Spec.KafkaTxnID
 
 	// Consumer config
 	sConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}

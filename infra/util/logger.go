@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/hjoshi123/fintel/infra/config"
-	"github.com/hjoshi123/fintel/infra/config/appconfig/loglevel"
+	"github.com/hjoshi123/fintel/infra/constants"
 	"github.com/rs/zerolog"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -23,11 +23,11 @@ func Logger() zerolog.Logger {
 		var logLevel zerolog.Level
 
 		switch config.Spec.LogLevel {
-		case loglevel.Debug:
+		case constants.DebugLog:
 			logLevel = zerolog.DebugLevel
-		case loglevel.Info:
+		case constants.InfoLog:
 			logLevel = zerolog.InfoLevel
-		case loglevel.Warn:
+		case constants.WarnLog:
 			logLevel = zerolog.WarnLevel
 		}
 

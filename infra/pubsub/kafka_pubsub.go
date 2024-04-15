@@ -103,9 +103,9 @@ func NewKafkaPubSub() PubSub {
 	kf := new(KafkaPubSub)
 	kf.handler = sync.Map{}
 	kf.ready = atomic.Int32{}
-	kf.producerProvider = newProducerProvider(strings.Split(config.Spec.Kafka.Brokers, ","), GetSaramaConfig())
+	kf.producerProvider = newProducerProvider(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 	pubsubOnce.Do(func() {
-		kfkClient, err := sarama.NewClient(strings.Split(config.Spec.Kafka.Brokers, ","), GetSaramaConfig())
+		kfkClient, err := sarama.NewClient(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 		if err != nil {
 			util.Log.Error().Err(err).Msg("Failed to create kafka client")
 			return
@@ -230,7 +230,7 @@ func (kf *KafkaPubSub) Consume(ctx context.Context) error {
 
 func (kf *KafkaPubSub) startConsumerGroupsParallel(ctx context.Context, subTopics []string, mainTopic string, wg *sync.WaitGroup) error {
 	defer wg.Done()
-	consumer, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("%s-%s", config.Spec.Kafka.Group, mainTopic), kf.kfkClient)
+	consumer, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("%s-%s", config.Spec.KafkaGroup, mainTopic), kf.kfkClient)
 	if err != nil {
 		util.Log.Err(err).Msg("error creating consumer group")
 		return err

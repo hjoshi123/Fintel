@@ -20,7 +20,7 @@ func Connect() *sql.DB {
 	once.Do(func() {
 		logger := util.Logger()
 		localDB, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-			config.Spec.DB.DbAuth.DbUser, config.Spec.DB.DbAuth.DbPassword, config.Spec.DB.DbHost, config.Spec.DB.DbPort, config.Spec.DB.DbName))
+			config.Spec.DBUser, config.Spec.DBPassword, config.Spec.DBHost, config.Spec.DBPort, config.Spec.DBName))
 		if err != nil {
 			logger.Panic().Err(err).Msg("failed to connect to database")
 		}
