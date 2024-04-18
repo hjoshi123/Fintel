@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -29,6 +30,7 @@ type TopContent struct {
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	URL       string    `boil:"url" json:"url" toml:"url" yaml:"url"`
 	SRC       string    `boil:"src" json:"src" toml:"src" yaml:"src"`
+	Info      null.JSON `boil:"info" json:"info,omitempty" toml:"info" yaml:"info,omitempty"`
 
 	R *topContentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L topContentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,6 +43,7 @@ var TopContentColumns = struct {
 	UpdatedAt string
 	URL       string
 	SRC       string
+	Info      string
 }{
 	ID:        "id",
 	Ticker:    "ticker",
@@ -48,6 +51,7 @@ var TopContentColumns = struct {
 	UpdatedAt: "updated_at",
 	URL:       "url",
 	SRC:       "src",
+	Info:      "info",
 }
 
 var TopContentTableColumns = struct {
@@ -57,6 +61,7 @@ var TopContentTableColumns = struct {
 	UpdatedAt string
 	URL       string
 	SRC       string
+	Info      string
 }{
 	ID:        "top_content.id",
 	Ticker:    "top_content.ticker",
@@ -64,6 +69,7 @@ var TopContentTableColumns = struct {
 	UpdatedAt: "top_content.updated_at",
 	URL:       "top_content.url",
 	SRC:       "top_content.src",
+	Info:      "top_content.info",
 }
 
 // Generated where
@@ -89,6 +95,30 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
+type whereHelpernull_JSON struct{ field string }
+
+func (w whereHelpernull_JSON) EQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_JSON) NEQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_JSON) LT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_JSON) LTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_JSON) GT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_JSON) GTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_JSON) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var TopContentWhere = struct {
 	ID        whereHelperint
 	Ticker    whereHelperstring
@@ -96,6 +126,7 @@ var TopContentWhere = struct {
 	UpdatedAt whereHelpertime_Time
 	URL       whereHelperstring
 	SRC       whereHelperstring
+	Info      whereHelpernull_JSON
 }{
 	ID:        whereHelperint{field: "\"top_content\".\"id\""},
 	Ticker:    whereHelperstring{field: "\"top_content\".\"ticker\""},
@@ -103,6 +134,7 @@ var TopContentWhere = struct {
 	UpdatedAt: whereHelpertime_Time{field: "\"top_content\".\"updated_at\""},
 	URL:       whereHelperstring{field: "\"top_content\".\"url\""},
 	SRC:       whereHelperstring{field: "\"top_content\".\"src\""},
+	Info:      whereHelpernull_JSON{field: "\"top_content\".\"info\""},
 }
 
 // TopContentRels is where relationship names are stored.
@@ -122,9 +154,9 @@ func (*topContentR) NewStruct() *topContentR {
 type topContentL struct{}
 
 var (
-	topContentAllColumns            = []string{"id", "ticker", "created_at", "updated_at", "url", "src"}
+	topContentAllColumns            = []string{"id", "ticker", "created_at", "updated_at", "url", "src", "info"}
 	topContentColumnsWithoutDefault = []string{"ticker", "url", "src"}
-	topContentColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
+	topContentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "info"}
 	topContentPrimaryKeyColumns     = []string{"id"}
 	topContentGeneratedColumns      = []string{}
 )
