@@ -35,10 +35,13 @@ type Configuration struct {
 
 func init() {
 	v := viper.New()
+
+	v.AddConfigPath(".")
+	v.SetConfigType("env")
 	v.AutomaticEnv()
 	err := v.ReadInConfig()
 	if err != nil {
-		fmt.Errorf("Error reading config file, %s", err)
+		fmt.Printf("Error reading config file, %s", err.Error())
 	}
 
 	err = v.Unmarshal(&Spec)
