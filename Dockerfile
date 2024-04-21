@@ -29,13 +29,12 @@ FROM alpine:3.18 AS app
 COPY --from=appbuild /fintel/application /application
 COPY --from=appbuild /fintel/wait-for-it/bin/wait-for-it /usr/local/bin/
 ARG dbHost=db
-ENV DB_HOST=$dbHost
-ARG dbPort=3306
-ENV DB_PORT=$dbPort
+ENV db_host=$dbHost
+ARG dbPort=5432
+ENV db_port=$dbPort
 EXPOSE 8080
-EXPOSE 8081
 RUN ls -aril
-CMD wait-for-it -w $DB_HOST:$DB_PORT -t 60 -- application
+CMD wait-for-it -w $db_host:$dbPort -t 60 -- application
 
 FROM alpine:3.18 AS pubsub
 COPY --from=pubsubbuild /fintel/pubsub /pubsub

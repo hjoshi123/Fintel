@@ -36,8 +36,6 @@ func init() {
 	Spec = new(Configuration)
 
 	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-	viper.SetConfigName(".env")
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
