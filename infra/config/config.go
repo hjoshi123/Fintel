@@ -74,7 +74,7 @@ func bindenvs(vip *viper.Viper, iface interface{}) {
 		}
 		switch v.Kind() {
 		default:
-			vip.BindEnv(tv)
+			vip.BindEnv(tv, tv)
 		}
 	}
 }
