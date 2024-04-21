@@ -105,6 +105,7 @@ func NewKafkaPubSub() PubSub {
 	kf.ready = atomic.Int32{}
 	kf.producerProvider = newProducerProvider(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 	pubsubOnce.Do(func() {
+		util.Log.Info().Any("msg", config.Spec)
 		kfkClient, err := sarama.NewClient(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 		if err != nil {
 			util.Log.Error().Err(err).Msg("Failed to create kafka client")
