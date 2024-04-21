@@ -8,10 +8,12 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/hjoshi123/fintel/infra/config"
+	"github.com/hjoshi123/fintel/infra/util"
 	"github.com/hjoshi123/fintel/pkg/models"
 )
 
 func GetSaramaConfig() *sarama.Config {
+	util.Log.Info().Any("config", config.Spec)
 	sConfig := sarama.NewConfig()
 	sConfig.ClientID = config.Spec.KafkaClientID
 
