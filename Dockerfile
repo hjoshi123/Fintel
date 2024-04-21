@@ -35,6 +35,7 @@ ARG dbPort=5432
 ENV db_port=$dbPort
 EXPOSE 8080
 RUN ls -aril
+RUN curl -sSf https://atlasgo.sh | sh
 CMD wait-for-it -w $db_host:$db_port -t 60 -- ./application
 
 FROM alpine:3.18 AS pubsub
