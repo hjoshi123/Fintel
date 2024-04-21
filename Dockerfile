@@ -26,7 +26,7 @@ WORKDIR /fintel
 RUN GOOS=linux go build -o pubsub cmd/pubsub/main.go
 
 FROM alpine:3.18 AS app
-COPY --from=appbuild /fintel/application /application
+COPY --from=appbuild /fintel/application .
 COPY --from=appbuild /fintel/wait-for-it/bin/wait-for-it /usr/local/bin/
 ARG dbHost=db
 ENV db_host=$dbHost
@@ -37,6 +37,6 @@ RUN ls -aril
 CMD wait-for-it -w $db_host:$db_port -t 60 -- application
 
 FROM alpine:3.18 AS pubsub
-COPY --from=pubsubbuild /fintel/pubsub /pubsub
+COPY --from=pubsubbuild /fintel/pubsub .
 RUN ls -aril
 CMD ["./pubsub"]
