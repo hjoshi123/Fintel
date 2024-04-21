@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -36,13 +37,16 @@ type Configuration struct {
 func init() {
 	v := viper.New()
 
+	v.AutomaticEnv()
 	v.AddConfigPath(".")
 	v.SetConfigType("env")
-	v.AutomaticEnv()
+
 	err := v.ReadInConfig()
 	if err != nil {
 		fmt.Printf("Error reading config file, %s", err.Error())
 	}
+
+	bindenvs(v, Spec)
 
 	err = v.Unmarshal(&Spec)
 }
@@ -53,4 +57,23 @@ func IsDevelopment() bool {
 
 func IsProduction() bool {
 	return Spec.Environment == "production"
+}
+
+func bindenvs(vip *viper.Viper, iface interface{}) {
+	ifv := reflect.ValueOf(iface)
+	if ifv.Kind() == reflect.Ptr {
+		ifv = ifv.Elem()
+	}
+	for i := 0; i < ifv.NumField(); i++ {
+		v := ifv.Field(i)
+		t := ifv.Type().Field(i)
+		tv, ok := t.Tag.Lookup("mapstructure")
+		if !ok {
+			continue
+		}
+		switch v.Kind() {
+		default:
+			vip.BindEnv(tv)
+		}
+	}
 }
