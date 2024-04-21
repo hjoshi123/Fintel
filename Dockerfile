@@ -28,7 +28,7 @@ RUN GOOS=linux go build -o pubsub cmd/pubsub/main.go
 FROM alpine:3.18 AS app
 COPY --from=appbuild /fintel/application .
 COPY --from=appbuild /fintel/wait-for-it/bin/wait-for-it /usr/local/bin/
-COPY --from=appbuild /fintel/migrations .
+COPY --from=appbuild /fintel/migrations ./migrations
 ARG dbHost=db
 ENV db_host=$dbHost
 ARG dbPort=5432
