@@ -35,7 +35,6 @@ type Configuration struct {
 func init() {
 	Spec = new(Configuration)
 
-	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {

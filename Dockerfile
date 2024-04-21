@@ -34,7 +34,7 @@ ARG dbPort=5432
 ENV db_port=$dbPort
 EXPOSE 8080
 RUN ls -aril
-CMD wait-for-it -w $db_host:$dbPort -t 60 -- application
+CMD wait-for-it -w $db_host:$db_port -t 60 -- application
 
 FROM alpine:3.18 AS pubsub
 COPY --from=pubsubbuild /fintel/pubsub /pubsub
