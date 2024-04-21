@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -27,13 +28,10 @@ var (
 )
 
 func Execute() error {
-	logger := util.Logger()
-	logger.Debug().Any("config", config.Spec).Msg("config loaded")
-
 	cobraServer.Flags().StringVarP(&migrationPath, "migration-path", "m", "", "Path to the migration files")
 	cobraServer.Flags().BoolVar(&disableMigration, "disable-migration", false, "Disable migration")
 	if err := cobraServer.Execute(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to start server")
+		log.Fatal(err)
 		return err
 	}
 
