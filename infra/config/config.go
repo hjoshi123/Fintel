@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -39,10 +40,10 @@ func init() {
 	v.AutomaticEnv()
 	err := v.ReadInConfig()
 	if err != nil {
-		panic(err)
+		fmt.Errorf("Error reading config file, %s", err)
 	}
 
-	err = viper.Unmarshal(&Spec)
+	err = v.Unmarshal(&Spec)
 }
 
 func IsDevelopment() bool {
