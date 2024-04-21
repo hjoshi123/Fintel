@@ -25,7 +25,6 @@ func Initialize() {
 }
 
 func initConfig() {
-	ctx := finTasker.Context()
 	_ = util.Logger()
 
 	_ = database.Connect()

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hjoshi123/fintel/infra/constants"
 	"github.com/hjoshi123/fintel/infra/pubsub"
 	"github.com/hjoshi123/fintel/infra/util"
 	datastore "github.com/hjoshi123/fintel/pkg/datastore/db"
@@ -17,14 +18,16 @@ import (
 )
 
 type StockHelpers struct {
-	Pubsub         pubsub.PubSub
-	SentimentStore datastoreIface.StockSentimentStore
+	Pubsub          pubsub.PubSub
+	SentimentStore  datastoreIface.StockSentimentStore
+	TopContentStore datastoreIface.TopContentStore
 }
 
 func NewStockHelpers() *StockHelpers {
 	return &StockHelpers{
-		Pubsub:         pubsub.NewKafkaPubSub(),
-		SentimentStore: datastore.NewStockSentimentStore(),
+		Pubsub:          pubsub.NewKafkaPubSub(),
+		SentimentStore:  datastore.NewStockSentimentStore(),
+		TopContentStore: datastore.NewTopContentStore(),
 	}
 }
 
@@ -44,10 +47,91 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	stockSentiment.Chatter = chatter
 	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Feed)
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
+
 	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
 	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
 
-	return s.SentimentStore.Save(ctx, stockSentiment)
+	err = s.SentimentStore.Save(ctx, stockSentiment)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error saving stock sentiment")
+		return err
+	}
+
+	for _, feed := range alphaNews.Feed[:10] {
+		topContent := new(models.TopContent)
+		topContent.Ticker = alphaNews.Ticker
+		topContent.URL = feed.URL
+		topContent.SRC = constants.StockNewsSource
+
+		parsedTime, err := time.Parse(time.RFC3339, feed.TimePublished)
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error parsing time")
+		}
+
+		topContent.CreatedAt = parsedTime
+		topContent.UpdatedAt = time.Now()
+
+		err = s.TopContentStore.Save(ctx, topContent)
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error saving top content")
+			continue
+		}
+	}
+
+	return nil
+}
+
+func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.Message) error {
+	redditResponse := new(SocialSentiment)
+	if err := json.NewDecoder(strings.NewReader(msg.Data)).Decode(redditResponse); err != nil {
+		return err
+	}
+
+	stockSentiment := new(models.StockSentiment)
+	stockSentiment.Ticker = redditResponse.Ticker
+	stockSentiment.Chatter = redditResponse.Items
+
+	positiveCount, negativeCount := 0, 0
+	for _, post := range redditResponse.Feed {
+		if post.OverallSentimentScore.Compound > 0 {
+			positiveCount++
+		} else if post.OverallSentimentScore.Compound < 0 {
+			negativeCount++
+		}
+	}
+
+	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
+	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
+	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
+
+	err := s.SentimentStore.Save(ctx, stockSentiment)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error saving stock social sentiment")
+		return err
+	}
+
+	for _, post := range redditResponse.Feed {
+		topContent := new(models.TopContent)
+		topContent.Ticker = redditResponse.Ticker
+		topContent.URL = post.PostURL
+		topContent.SRC = constants.StockRedditSource
+
+		parsedTime, err := time.Parse(time.RFC3339, post.PostTime)
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error parsing time")
+		}
+
+		topContent.CreatedAt = parsedTime
+		topContent.UpdatedAt = time.Now()
+
+		err = s.TopContentStore.Save(ctx, topContent)
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error saving top content")
+			continue
+		}
+	}
+
+	return nil
 }
 
 func getPositiveAndNegativeCount(articles []StockFeed) (int, int) {

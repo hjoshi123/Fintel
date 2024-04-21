@@ -1,5 +1,6 @@
 package constants
 
 const (
-	StocksNewsCreateTopic = "stocks.news.create"
+	StocksNewsCreateTopic   = "stocks.news.create"
+	StocksSocialCreateTopic = "stocks.social.create"
 )

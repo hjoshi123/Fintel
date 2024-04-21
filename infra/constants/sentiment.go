@@ -1,5 +1,6 @@
 package constants
 
 const (
-	StockNewsSource = "news"
+	StockNewsSource   = "news"
+	StockRedditSource = "reddit"
 )

@@ -1,10 +1,13 @@
 package api
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 
+	"github.com/google/jsonapi"
 	"github.com/gorilla/mux"
 	"github.com/hjoshi123/fintel/infra/util"
 	"github.com/hjoshi123/fintel/pkg/models"
@@ -20,6 +23,7 @@ type Input struct {
 
 type Output struct {
 	Output interface{}
+	IsJSON bool
 }
 
 type CustomHandler func(ctx context.Context, input Input) (Output, error)
@@ -47,14 +51,35 @@ func (c CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if output.Output != nil {
-		b, err := json.Marshal(output.Output)
-		if err != nil {
-			util.Log.Error().Ctx(ctx).Err(err).Msg("failed to marshal response")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		if output.IsJSON {
+			w.Header().Set("Content-Type", "application/json")
+			b, err := json.Marshal(output.Output)
+			if err != nil {
+				util.Log.Error().Ctx(ctx).Err(err).Msg("failed to marshal response")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.Write(b)
+		} else {
+			resp, err := jsonapi.Marshal(output.Output)
+			if err != nil {
+				util.Log.Error().Ctx(ctx).Err(err).Msg("failed to marshal response")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			var b bytes.Buffer
+			encodedResponse := bufio.NewWriter(&b)
+			//fmt.Print(p)
+			if err := json.NewEncoder(encodedResponse).Encode(resp); err != nil {
+				util.Log.Error().Ctx(ctx).Err(err).Msg("failed to encode response")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			encodedResponse.Flush()
+			w.Header().Set("Content-Type", jsonapi.MediaType)
+			w.Write(b.Bytes())
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(b)
 	}
 
 	w.WriteHeader(http.StatusOK)

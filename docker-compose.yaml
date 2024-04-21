@@ -14,3 +14,23 @@ services:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=dev124342
       - POSTGRES_DB=fintel
+  fintel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    ports:
+      - 8082:8080
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+  fintel_pubsub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: pubsub
+    env_file:
+      - .env
+    depends_on:
+      - postgres

@@ -25,7 +25,6 @@ type Configuration struct {
 	KafkaTxnID         string `mapstructure:"kafka_txnID"`
 	KafkaBrokers       string `mapstructure:"kafka_brokers"`
 	KafkaGroup         string `mapstructure:"kafka_group"`
-	KafkaTopic         string `mapstructure:"kafka_topic"`
 	SaslEnable         bool   `mapstructure:"sasl_enable"`
 	SaslMechanism      string `mapstructure:"sasl_mechanism"`
 	KafkaUsername      string `mapstructure:"kafka_username"`

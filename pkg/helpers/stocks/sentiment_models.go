@@ -30,3 +30,25 @@ type StockFeed struct {
 		TickerSentimentLabel string `json:"ticker_sentiment_label,omitempty"`
 	} `json:"ticker_sentiment,omitempty"`
 }
+
+type SocialSentiment struct {
+	Source string `json:"source"`
+	Feed   []struct {
+		PostTitle             string `json:"post_title"`
+		Body                  string `json:"body"`
+		Comments              int    `json:"comments"`
+		PostTime              string `json:"post_time"`
+		PostURL               string `json:"post_url"`
+		OverallSentimentScore struct {
+			Neg      float64 `json:"neg"`
+			Pos      float64 `json:"pos"`
+			Neu      float64 `json:"neu"`
+			Compound float64 `json:"compound"`
+		} `json:"overall_sentiment_score"`
+		OverallSentiment string `json:"overall_sentiment"`
+		NumComments      int    `json:"num_comments"`
+	} `json:"feed"`
+	Items    int    `json:"items"`
+	Ticker   string `json:"ticker"`
+	NumPosts int    `json:"num_posts"`
+}
