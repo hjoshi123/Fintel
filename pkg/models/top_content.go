@@ -31,6 +31,7 @@ type TopContent struct {
 	URL       string    `boil:"url" json:"url" toml:"url" yaml:"url"`
 	SRC       string    `boil:"src" json:"src" toml:"src" yaml:"src"`
 	Info      null.JSON `boil:"info" json:"info,omitempty" toml:"info" yaml:"info,omitempty"`
+	SourceID  int       `boil:"source_id" json:"source_id" toml:"source_id" yaml:"source_id"`
 
 	R *topContentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L topContentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,6 +45,7 @@ var TopContentColumns = struct {
 	URL       string
 	SRC       string
 	Info      string
+	SourceID  string
 }{
 	ID:        "id",
 	Ticker:    "ticker",
@@ -52,6 +54,7 @@ var TopContentColumns = struct {
 	URL:       "url",
 	SRC:       "src",
 	Info:      "info",
+	SourceID:  "source_id",
 }
 
 var TopContentTableColumns = struct {
@@ -62,6 +65,7 @@ var TopContentTableColumns = struct {
 	URL       string
 	SRC       string
 	Info      string
+	SourceID  string
 }{
 	ID:        "top_content.id",
 	Ticker:    "top_content.ticker",
@@ -70,6 +74,7 @@ var TopContentTableColumns = struct {
 	URL:       "top_content.url",
 	SRC:       "top_content.src",
 	Info:      "top_content.info",
+	SourceID:  "top_content.source_id",
 }
 
 // Generated where
@@ -127,6 +132,7 @@ var TopContentWhere = struct {
 	URL       whereHelperstring
 	SRC       whereHelperstring
 	Info      whereHelpernull_JSON
+	SourceID  whereHelperint
 }{
 	ID:        whereHelperint{field: "\"top_content\".\"id\""},
 	Ticker:    whereHelperstring{field: "\"top_content\".\"ticker\""},
@@ -135,14 +141,19 @@ var TopContentWhere = struct {
 	URL:       whereHelperstring{field: "\"top_content\".\"url\""},
 	SRC:       whereHelperstring{field: "\"top_content\".\"src\""},
 	Info:      whereHelpernull_JSON{field: "\"top_content\".\"info\""},
+	SourceID:  whereHelperint{field: "\"top_content\".\"source_id\""},
 }
 
 // TopContentRels is where relationship names are stored.
 var TopContentRels = struct {
-}{}
+	Source string
+}{
+	Source: "Source",
+}
 
 // topContentR is where relationships are stored.
 type topContentR struct {
+	Source *Source `boil:"Source" json:"Source" toml:"Source" yaml:"Source"`
 }
 
 // NewStruct creates a new relationship struct
@@ -150,13 +161,20 @@ func (*topContentR) NewStruct() *topContentR {
 	return &topContentR{}
 }
 
+func (r *topContentR) GetSource() *Source {
+	if r == nil {
+		return nil
+	}
+	return r.Source
+}
+
 // topContentL is where Load methods for each relationship are stored.
 type topContentL struct{}
 
 var (
-	topContentAllColumns            = []string{"id", "ticker", "created_at", "updated_at", "url", "src", "info"}
+	topContentAllColumns            = []string{"id", "ticker", "created_at", "updated_at", "url", "src", "info", "source_id"}
 	topContentColumnsWithoutDefault = []string{"ticker", "url", "src"}
-	topContentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "info"}
+	topContentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "info", "source_id"}
 	topContentPrimaryKeyColumns     = []string{"id"}
 	topContentGeneratedColumns      = []string{}
 )
@@ -484,6 +502,192 @@ func (q topContentQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	}
 
 	return count > 0, nil
+}
+
+// Source pointed to by the foreign key.
+func (o *TopContent) Source(mods ...qm.QueryMod) sourceQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.SourceID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Sources(queryMods...)
+}
+
+// LoadSource allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (topContentL) LoadSource(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTopContent interface{}, mods queries.Applicator) error {
+	var slice []*TopContent
+	var object *TopContent
+
+	if singular {
+		var ok bool
+		object, ok = maybeTopContent.(*TopContent)
+		if !ok {
+			object = new(TopContent)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeTopContent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTopContent))
+			}
+		}
+	} else {
+		s, ok := maybeTopContent.(*[]*TopContent)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeTopContent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTopContent))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &topContentR{}
+		}
+		args[object.SourceID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &topContentR{}
+			}
+
+			args[obj.SourceID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`sources`),
+		qm.WhereIn(`sources.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Source")
+	}
+
+	var resultSlice []*Source
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Source")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for sources")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sources")
+	}
+
+	if len(sourceAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Source = foreign
+		if foreign.R == nil {
+			foreign.R = &sourceR{}
+		}
+		foreign.R.TopContents = append(foreign.R.TopContents, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.SourceID == foreign.ID {
+				local.R.Source = foreign
+				if foreign.R == nil {
+					foreign.R = &sourceR{}
+				}
+				foreign.R.TopContents = append(foreign.R.TopContents, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetSourceG of the topContent to the related item.
+// Sets o.R.Source to related.
+// Adds o to related.R.TopContents.
+// Uses the global database handle.
+func (o *TopContent) SetSourceG(ctx context.Context, insert bool, related *Source) error {
+	return o.SetSource(ctx, boil.GetContextDB(), insert, related)
+}
+
+// SetSource of the topContent to the related item.
+// Sets o.R.Source to related.
+// Adds o to related.R.TopContents.
+func (o *TopContent) SetSource(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Source) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"top_content\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"source_id"}),
+		strmangle.WhereClause("\"", "\"", 2, topContentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.SourceID = related.ID
+	if o.R == nil {
+		o.R = &topContentR{
+			Source: related,
+		}
+	} else {
+		o.R.Source = related
+	}
+
+	if related.R == nil {
+		related.R = &sourceR{
+			TopContents: TopContentSlice{o},
+		}
+	} else {
+		related.R.TopContents = append(related.R.TopContents, o)
+	}
+
+	return nil
 }
 
 // TopContents retrieves all the records using an executor.

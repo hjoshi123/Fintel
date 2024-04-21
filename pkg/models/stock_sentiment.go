@@ -30,6 +30,7 @@ type StockSentiment struct {
 	Chatter   int       `boil:"chatter" json:"chatter" toml:"chatter" yaml:"chatter"`
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	SourceID  int       `boil:"source_id" json:"source_id" toml:"source_id" yaml:"source_id"`
 
 	R *stockSentimentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L stockSentimentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,6 +43,7 @@ var StockSentimentColumns = struct {
 	Chatter   string
 	CreatedAt string
 	UpdatedAt string
+	SourceID  string
 }{
 	ID:        "id",
 	Ticker:    "ticker",
@@ -49,6 +51,7 @@ var StockSentimentColumns = struct {
 	Chatter:   "chatter",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
+	SourceID:  "source_id",
 }
 
 var StockSentimentTableColumns = struct {
@@ -58,6 +61,7 @@ var StockSentimentTableColumns = struct {
 	Chatter   string
 	CreatedAt string
 	UpdatedAt string
+	SourceID  string
 }{
 	ID:        "stock_sentiment.id",
 	Ticker:    "stock_sentiment.ticker",
@@ -65,36 +69,10 @@ var StockSentimentTableColumns = struct {
 	Chatter:   "stock_sentiment.chatter",
 	CreatedAt: "stock_sentiment.created_at",
 	UpdatedAt: "stock_sentiment.updated_at",
+	SourceID:  "stock_sentiment.source_id",
 }
 
 // Generated where
-
-type whereHelperstring struct{ field string }
-
-func (w whereHelperstring) EQ(x string) qm.QueryMod     { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperstring) NEQ(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperstring) LT(x string) qm.QueryMod     { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperstring) LTE(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperstring) GT(x string) qm.QueryMod     { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperstring) GTE(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperstring) LIKE(x string) qm.QueryMod   { return qm.Where(w.field+" LIKE ?", x) }
-func (w whereHelperstring) NLIKE(x string) qm.QueryMod  { return qm.Where(w.field+" NOT LIKE ?", x) }
-func (w whereHelperstring) ILIKE(x string) qm.QueryMod  { return qm.Where(w.field+" ILIKE ?", x) }
-func (w whereHelperstring) NILIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT ILIKE ?", x) }
-func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
 type whereHelperfloat64 struct{ field string }
 
@@ -156,6 +134,7 @@ var StockSentimentWhere = struct {
 	Chatter   whereHelperint
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
+	SourceID  whereHelperint
 }{
 	ID:        whereHelperint{field: "\"stock_sentiment\".\"id\""},
 	Ticker:    whereHelperstring{field: "\"stock_sentiment\".\"ticker\""},
@@ -163,14 +142,19 @@ var StockSentimentWhere = struct {
 	Chatter:   whereHelperint{field: "\"stock_sentiment\".\"chatter\""},
 	CreatedAt: whereHelpernull_Time{field: "\"stock_sentiment\".\"created_at\""},
 	UpdatedAt: whereHelpernull_Time{field: "\"stock_sentiment\".\"updated_at\""},
+	SourceID:  whereHelperint{field: "\"stock_sentiment\".\"source_id\""},
 }
 
 // StockSentimentRels is where relationship names are stored.
 var StockSentimentRels = struct {
-}{}
+	Source string
+}{
+	Source: "Source",
+}
 
 // stockSentimentR is where relationships are stored.
 type stockSentimentR struct {
+	Source *Source `boil:"Source" json:"Source" toml:"Source" yaml:"Source"`
 }
 
 // NewStruct creates a new relationship struct
@@ -178,13 +162,20 @@ func (*stockSentimentR) NewStruct() *stockSentimentR {
 	return &stockSentimentR{}
 }
 
+func (r *stockSentimentR) GetSource() *Source {
+	if r == nil {
+		return nil
+	}
+	return r.Source
+}
+
 // stockSentimentL is where Load methods for each relationship are stored.
 type stockSentimentL struct{}
 
 var (
-	stockSentimentAllColumns            = []string{"id", "ticker", "daily_ici", "chatter", "created_at", "updated_at"}
+	stockSentimentAllColumns            = []string{"id", "ticker", "daily_ici", "chatter", "created_at", "updated_at", "source_id"}
 	stockSentimentColumnsWithoutDefault = []string{"ticker", "daily_ici", "chatter"}
-	stockSentimentColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
+	stockSentimentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "source_id"}
 	stockSentimentPrimaryKeyColumns     = []string{"id"}
 	stockSentimentGeneratedColumns      = []string{}
 )
@@ -512,6 +503,192 @@ func (q stockSentimentQuery) Exists(ctx context.Context, exec boil.ContextExecut
 	}
 
 	return count > 0, nil
+}
+
+// Source pointed to by the foreign key.
+func (o *StockSentiment) Source(mods ...qm.QueryMod) sourceQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.SourceID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Sources(queryMods...)
+}
+
+// LoadSource allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (stockSentimentL) LoadSource(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStockSentiment interface{}, mods queries.Applicator) error {
+	var slice []*StockSentiment
+	var object *StockSentiment
+
+	if singular {
+		var ok bool
+		object, ok = maybeStockSentiment.(*StockSentiment)
+		if !ok {
+			object = new(StockSentiment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeStockSentiment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeStockSentiment))
+			}
+		}
+	} else {
+		s, ok := maybeStockSentiment.(*[]*StockSentiment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeStockSentiment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeStockSentiment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &stockSentimentR{}
+		}
+		args[object.SourceID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &stockSentimentR{}
+			}
+
+			args[obj.SourceID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`sources`),
+		qm.WhereIn(`sources.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Source")
+	}
+
+	var resultSlice []*Source
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Source")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for sources")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sources")
+	}
+
+	if len(sourceAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Source = foreign
+		if foreign.R == nil {
+			foreign.R = &sourceR{}
+		}
+		foreign.R.StockSentiments = append(foreign.R.StockSentiments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.SourceID == foreign.ID {
+				local.R.Source = foreign
+				if foreign.R == nil {
+					foreign.R = &sourceR{}
+				}
+				foreign.R.StockSentiments = append(foreign.R.StockSentiments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetSourceG of the stockSentiment to the related item.
+// Sets o.R.Source to related.
+// Adds o to related.R.StockSentiments.
+// Uses the global database handle.
+func (o *StockSentiment) SetSourceG(ctx context.Context, insert bool, related *Source) error {
+	return o.SetSource(ctx, boil.GetContextDB(), insert, related)
+}
+
+// SetSource of the stockSentiment to the related item.
+// Sets o.R.Source to related.
+// Adds o to related.R.StockSentiments.
+func (o *StockSentiment) SetSource(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Source) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"stock_sentiment\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"source_id"}),
+		strmangle.WhereClause("\"", "\"", 2, stockSentimentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.SourceID = related.ID
+	if o.R == nil {
+		o.R = &stockSentimentR{
+			Source: related,
+		}
+	} else {
+		o.R.Source = related
+	}
+
+	if related.R == nil {
+		related.R = &sourceR{
+			StockSentiments: StockSentimentSlice{o},
+		}
+	} else {
+		related.R.StockSentiments = append(related.R.StockSentiments, o)
+	}
+
+	return nil
 }
 
 // StockSentiments retrieves all the records using an executor.

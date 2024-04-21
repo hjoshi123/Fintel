@@ -4,12 +4,14 @@
 package models
 
 var TableNames = struct {
+	Sources        string
 	SpatialRefSys  string
 	StockSentiment string
 	Tickers        string
 	TopContent     string
 	Users          string
 }{
+	Sources:        "sources",
 	SpatialRefSys:  "spatial_ref_sys",
 	StockSentiment: "stock_sentiment",
 	Tickers:        "tickers",
