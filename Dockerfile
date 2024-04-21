@@ -34,7 +34,8 @@ ENV db_host=$dbHost
 ARG dbPort=5432
 ENV db_port=$dbPort
 EXPOSE 8080
-RUN ls -aril
+RUN apk add --no-cache curl
+RUN apk add build-base git
 RUN curl -sSf https://atlasgo.sh | sh
 CMD wait-for-it -w $db_host:$db_port -t 60 -- ./application
 
