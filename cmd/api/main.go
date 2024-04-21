@@ -44,6 +44,9 @@ func RunApiServer(cmd *cobra.Command, args []string) error {
 
 	_ = database.Connect()
 
+	logger.Info().Msg("Connected to database and loaded config")
+	logger.Debug().Any("config", config.Spec).Msg("config loaded")
+
 	if !disableMigration {
 		workdir, err := atlasexec.NewWorkingDir(
 			atlasexec.WithMigrations(
@@ -79,7 +82,6 @@ func RunApiServer(cmd *cobra.Command, args []string) error {
 	httpMux := server.Setup()
 
 	logger.Info().Msg("server started")
-	logger.Debug().Msgf("config %#+v", config.Spec)
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", config.Spec.Port), c.Handler(httpMux)); err != nil {
 		logger.Fatal().Err(err).Msg("failed to serve http server")
