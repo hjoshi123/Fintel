@@ -34,7 +34,7 @@ ARG dbPort=5432
 ENV db_port=$dbPort
 EXPOSE 8080
 RUN ls -aril
-CMD application
+CMD ["./application"]
 
 FROM alpine:3.18 AS pubsub
 COPY --from=pubsubbuild /fintel/pubsub .
