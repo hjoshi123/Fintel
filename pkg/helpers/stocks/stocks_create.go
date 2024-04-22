@@ -46,9 +46,15 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 
 	stockSentiment.Chatter = chatter
 	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Feed)
+	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
 
-	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
+	parsedTimeCreate, err := time.Parse("2006-01-02", alphaNews.Feed[0].TimePublished)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error parsing time")
+	}
+
+	stockSentiment.CreatedAt = null.NewTime(parsedTimeCreate, true)
 	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
 
 	err = s.SentimentStore.Save(ctx, stockSentiment, constants.StockNewsSource)
@@ -62,7 +68,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		topContent.Ticker = alphaNews.Ticker
 		topContent.URL = feed.URL
 
-		parsedTime, err := time.Parse(time.RFC3339, feed.TimePublished)
+		parsedTime, err := time.Parse("2006-01-02", feed.TimePublished)
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error parsing time")
 		}
@@ -99,11 +105,17 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 		}
 	}
 
+	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
-	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
+
+	parsedTimeCreate, err := time.Parse("2006-01-02", redditResponse.Feed[0].PostTime)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error parsing time")
+	}
+	stockSentiment.CreatedAt = null.NewTime(parsedTimeCreate, true)
 	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
 
-	err := s.SentimentStore.Save(ctx, stockSentiment, constants.StockSocialSource)
+	err = s.SentimentStore.Save(ctx, stockSentiment, constants.StockSocialSource)
 	if err != nil {
 		util.Log.Error().Err(err).Msg("error saving stock social sentiment")
 		return err
