@@ -51,7 +51,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
 	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
 
-	err = s.SentimentStore.Save(ctx, stockSentiment)
+	err = s.SentimentStore.Save(ctx, stockSentiment, constants.StockNewsSource)
 	if err != nil {
 		util.Log.Error().Err(err).Msg("error saving stock sentiment")
 		return err
@@ -61,7 +61,6 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		topContent := new(models.TopContent)
 		topContent.Ticker = alphaNews.Ticker
 		topContent.URL = feed.URL
-		topContent.SRC = constants.StockNewsSource
 
 		parsedTime, err := time.Parse(time.RFC3339, feed.TimePublished)
 		if err != nil {
@@ -71,7 +70,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		topContent.CreatedAt = parsedTime
 		topContent.UpdatedAt = time.Now()
 
-		err = s.TopContentStore.Save(ctx, topContent)
+		err = s.TopContentStore.Save(ctx, topContent, constants.StockNewsSource)
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error saving top content")
 			continue
@@ -104,7 +103,7 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 	stockSentiment.CreatedAt = null.NewTime(time.Now(), true)
 	stockSentiment.UpdatedAt = null.NewTime(time.Now(), true)
 
-	err := s.SentimentStore.Save(ctx, stockSentiment)
+	err := s.SentimentStore.Save(ctx, stockSentiment, constants.StockSocialSource)
 	if err != nil {
 		util.Log.Error().Err(err).Msg("error saving stock social sentiment")
 		return err
@@ -114,7 +113,6 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 		topContent := new(models.TopContent)
 		topContent.Ticker = redditResponse.Ticker
 		topContent.URL = post.PostURL
-		topContent.SRC = constants.StockRedditSource
 
 		parsedTime, err := time.Parse(time.RFC3339, post.PostTime)
 		if err != nil {
@@ -124,7 +122,7 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 		topContent.CreatedAt = parsedTime
 		topContent.UpdatedAt = time.Now()
 
-		err = s.TopContentStore.Save(ctx, topContent)
+		err = s.TopContentStore.Save(ctx, topContent, constants.StockSocialSource)
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error saving top content")
 			continue

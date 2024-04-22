@@ -22,7 +22,7 @@ func main() {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")
 	}
 
-	err = client.Subscribe(ctx, constants.StockRedditSource, stockHelp.StockSocialMediaCreate)
+	err = client.Subscribe(ctx, constants.StocksSocialCreateTopic, stockHelp.StockSocialMediaCreate)
 	if err != nil {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")
 	}

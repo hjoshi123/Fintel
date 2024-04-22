@@ -2,5 +2,7 @@ package constants
 
 const (
 	StockNewsSource   = "news"
-	StockRedditSource = "reddit"
+	StockSocialSource = "social"
+	TimeStart         = "time_start"
+	TimeEnd           = "time_end"
 )

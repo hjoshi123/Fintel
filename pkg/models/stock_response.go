@@ -22,7 +22,7 @@ type Sentiment struct {
 }
 
 type TopContentResponse struct {
-	ID         int    `json:"id" jsonapi:"primary,top_contents"`
-	URL        string `json:"url" jsonapi:"attr,url"`
-	PostedDate string `json:"posted_date" jsonapi:"attr,posted_date"`
+	ID         int        `json:"id" jsonapi:"primary,top_contents"`
+	URL        string     `json:"url" jsonapi:"attr,url"`
+	PostedDate *time.Time `json:"posted_date" jsonapi:"attr,posted_date"`
 }

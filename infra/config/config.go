@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -51,7 +50,6 @@ func init() {
 	bindenvs(v, Spec)
 
 	err = v.Unmarshal(&Spec)
-	log.Printf("Config: %#+v\n", Spec)
 }
 
 func IsDevelopment() bool {
