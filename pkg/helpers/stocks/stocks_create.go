@@ -45,11 +45,12 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	}
 
 	stockSentiment.Chatter = chatter
-	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Feed)
+	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Ticker, alphaNews.Feed)
+
 	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
 
-	parsedTimeCreate, err := time.Parse("2006-01-02", alphaNews.Feed[0].TimePublished)
+	parsedTimeCreate, err := time.Parse("20060102", strings.Split(alphaNews.Feed[0].TimePublished, "T")[0])
 	if err != nil {
 		util.Log.Error().Err(err).Msg("error parsing time")
 	}
@@ -68,7 +69,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		topContent.Ticker = alphaNews.Ticker
 		topContent.URL = feed.URL
 
-		parsedTime, err := time.Parse("2006-01-02", feed.TimePublished)
+		parsedTime, err := time.Parse("20060102", strings.Split(feed.TimePublished, "T")[0])
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error parsing time")
 		}
@@ -108,7 +109,7 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
 
-	parsedTimeCreate, err := time.Parse("2006-01-02", redditResponse.Feed[0].PostTime)
+	parsedTimeCreate, err := time.Parse("2006-01-02", strings.Split(redditResponse.Feed[0].PostTime, " ")[0])
 	if err != nil {
 		util.Log.Error().Err(err).Msg("error parsing time")
 	}
@@ -126,7 +127,7 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 		topContent.Ticker = redditResponse.Ticker
 		topContent.URL = post.PostURL
 
-		parsedTime, err := time.Parse(time.RFC3339, post.PostTime)
+		parsedTime, err := time.Parse("2006-01-02", strings.Split(post.PostTime, " ")[0])
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error parsing time")
 		}
@@ -144,13 +145,22 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 	return nil
 }
 
-func getPositiveAndNegativeCount(articles []StockFeed) (int, int) {
+func getPositiveAndNegativeCount(ticker string, articles []StockFeed) (int, int) {
 	var positiveCount, negativeCount int
 	for _, article := range articles {
-		if article.OverallSentimentScore > 0.15 {
-			positiveCount++
-		} else if article.OverallSentimentScore < -0.15 {
-			negativeCount++
+		for _, tickSentiment := range article.TickerSentiment {
+			if tickSentiment.Ticker == ticker {
+				sentScoreFloat, err := strconv.ParseFloat(tickSentiment.TickerSentimentScore, 64)
+				if err != nil {
+					util.Log.Error().Err(err).Msg("error converting sentiment score to float")
+					continue
+				}
+				if sentScoreFloat > 0.15 {
+					positiveCount++
+				} else if sentScoreFloat < -0.15 {
+					negativeCount++
+				}
+			}
 		}
 	}
 	return positiveCount, negativeCount
