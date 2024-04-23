@@ -47,6 +47,21 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	stockSentiment.Chatter = chatter
 	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Ticker, alphaNews.Feed)
 
+	stockSentimentInfo := new(models.StockSentimentInfo)
+	stockSentimentInfo.PositiveCount = positiveCount
+	stockSentimentInfo.NegativeCount = negativeCount
+
+	jsonInfoBytes, err := json.Marshal(stockSentimentInfo)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error marshalling stock sentiment info")
+		return err
+	}
+
+	stockSentiment.Info = null.JSON{
+		JSON:  jsonInfoBytes,
+		Valid: true,
+	}
+
 	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
 	stockSentiment.DailyIci = calculateDailyICI(positiveCount, negativeCount)
 
@@ -97,13 +112,32 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 	stockSentiment.Ticker = redditResponse.Ticker
 	stockSentiment.Chatter = redditResponse.Items
 
-	positiveCount, negativeCount := 0, 0
+	stockSentimentInfo := new(models.StockSentimentInfo)
+
+	positiveCount, negativeCount, neutralCount := 0, 0, 0
 	for _, post := range redditResponse.Feed {
-		if post.OverallSentimentScore.Compound > 0 {
+		if post.OverallSentimentScore.Compound > 0.15 {
 			positiveCount++
-		} else if post.OverallSentimentScore.Compound < 0 {
+		} else if post.OverallSentimentScore.Compound < -0.15 {
 			negativeCount++
+		} else {
+			neutralCount++
 		}
+	}
+
+	stockSentimentInfo.PositiveCount = positiveCount
+	stockSentimentInfo.NegativeCount = negativeCount
+	stockSentimentInfo.NeutralCount = neutralCount
+
+	jsonInfoBytes, err := json.Marshal(stockSentimentInfo)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error marshalling stock sentiment info")
+		return err
+	}
+
+	stockSentiment.Info = null.JSON{
+		JSON:  jsonInfoBytes,
+		Valid: true,
 	}
 
 	util.Log.Info().Int("positive", positiveCount).Int("negative", negativeCount).Msg("positive and negative count")
