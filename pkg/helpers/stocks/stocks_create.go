@@ -110,7 +110,7 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 
 	stockSentiment := new(models.StockSentiment)
 	stockSentiment.Ticker = redditResponse.Ticker
-	stockSentiment.Chatter = redditResponse.Items
+	stockSentiment.Chatter = len(redditResponse.Feed)
 
 	stockSentimentInfo := new(models.StockSentimentInfo)
 

@@ -48,7 +48,6 @@ type SocialSentiment struct {
 		OverallSentiment string `json:"overall_sentiment"`
 		NumComments      int    `json:"num_comments"`
 	} `json:"feed"`
-	Items    int    `json:"items"`
-	Ticker   string `json:"ticker"`
-	NumPosts int    `json:"num_posts"`
+	Items  int    `json:"items"`
+	Ticker string `json:"ticker"`
 }
