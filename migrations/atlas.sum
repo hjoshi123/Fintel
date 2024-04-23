@@ -1,7 +1,8 @@
-h1:ac2KoQuEZGRo8pzNFOU3qkdBuzVJNPxuLWTIQUBSx1Q=
+h1:d7vYCziFFSKwXUIYPPsfOFdWFr3gdYKVoL5D4K4zIRk=
 20240317212558_create_users.sql h1:zJmBSBaMIT/kVCznh8AJEhqwAVXUGCngYYoan/rXEcQ=
 20240317230748_create_tickers.sql h1:Tmcwk/TaQHas4V8+yUu4FtblZ1APGw06bdwAh4tLa3w=
 20240408011242_stocks_sentiment.sql h1:nBr7un7GJrO+4+AvkwKTLexem4sGfzcGnAoD0BPyw6k=
 20240415001928_create_top_content.sql h1:Ze3iEPsGaH8Ym9DtpM0aLef3F9mDYhwg3ZhItdC6b5I=
 20240418024903_alter_top_content_info.sql h1:2cqRWZ/T0YD0TC2KaBohMmfM+bfL/lpF0cc5l2lq0hA=
 20240421074349_create_sources_table.sql h1:ZZV/WxVYIBQO15z7mYdp/X2dV7nCIpxwx44uEjPAQhQ=
+20240423064240_alter_stock_sentiment_info.sql h1:u0TP261boEUodoJxifNruDeh2LbkNSW34kwIe2D+cW4=

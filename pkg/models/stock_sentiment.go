@@ -31,6 +31,8 @@ type StockSentiment struct {
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	SourceID  int       `boil:"source_id" json:"source_id" toml:"source_id" yaml:"source_id"`
+	Info      null.JSON `boil:"info" json:"info,omitempty" toml:"info" yaml:"info,omitempty"`
+	Price     float64   `boil:"price" json:"price" toml:"price" yaml:"price"`
 
 	R *stockSentimentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L stockSentimentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,6 +46,8 @@ var StockSentimentColumns = struct {
 	CreatedAt string
 	UpdatedAt string
 	SourceID  string
+	Info      string
+	Price     string
 }{
 	ID:        "id",
 	Ticker:    "ticker",
@@ -52,6 +56,8 @@ var StockSentimentColumns = struct {
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
 	SourceID:  "source_id",
+	Info:      "info",
+	Price:     "price",
 }
 
 var StockSentimentTableColumns = struct {
@@ -62,6 +68,8 @@ var StockSentimentTableColumns = struct {
 	CreatedAt string
 	UpdatedAt string
 	SourceID  string
+	Info      string
+	Price     string
 }{
 	ID:        "stock_sentiment.id",
 	Ticker:    "stock_sentiment.ticker",
@@ -70,6 +78,8 @@ var StockSentimentTableColumns = struct {
 	CreatedAt: "stock_sentiment.created_at",
 	UpdatedAt: "stock_sentiment.updated_at",
 	SourceID:  "stock_sentiment.source_id",
+	Info:      "stock_sentiment.info",
+	Price:     "stock_sentiment.price",
 }
 
 // Generated where
@@ -127,6 +137,30 @@ func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
 func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+type whereHelpernull_JSON struct{ field string }
+
+func (w whereHelpernull_JSON) EQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_JSON) NEQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_JSON) LT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_JSON) LTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_JSON) GT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_JSON) GTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_JSON) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var StockSentimentWhere = struct {
 	ID        whereHelperint
 	Ticker    whereHelperstring
@@ -135,6 +169,8 @@ var StockSentimentWhere = struct {
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
 	SourceID  whereHelperint
+	Info      whereHelpernull_JSON
+	Price     whereHelperfloat64
 }{
 	ID:        whereHelperint{field: "\"stock_sentiment\".\"id\""},
 	Ticker:    whereHelperstring{field: "\"stock_sentiment\".\"ticker\""},
@@ -143,6 +179,8 @@ var StockSentimentWhere = struct {
 	CreatedAt: whereHelpernull_Time{field: "\"stock_sentiment\".\"created_at\""},
 	UpdatedAt: whereHelpernull_Time{field: "\"stock_sentiment\".\"updated_at\""},
 	SourceID:  whereHelperint{field: "\"stock_sentiment\".\"source_id\""},
+	Info:      whereHelpernull_JSON{field: "\"stock_sentiment\".\"info\""},
+	Price:     whereHelperfloat64{field: "\"stock_sentiment\".\"price\""},
 }
 
 // StockSentimentRels is where relationship names are stored.
@@ -173,9 +211,9 @@ func (r *stockSentimentR) GetSource() *Source {
 type stockSentimentL struct{}
 
 var (
-	stockSentimentAllColumns            = []string{"id", "ticker", "daily_ici", "chatter", "created_at", "updated_at", "source_id"}
+	stockSentimentAllColumns            = []string{"id", "ticker", "daily_ici", "chatter", "created_at", "updated_at", "source_id", "info", "price"}
 	stockSentimentColumnsWithoutDefault = []string{"ticker", "daily_ici", "chatter"}
-	stockSentimentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "source_id"}
+	stockSentimentColumnsWithDefault    = []string{"id", "created_at", "updated_at", "source_id", "info", "price"}
 	stockSentimentPrimaryKeyColumns     = []string{"id"}
 	stockSentimentGeneratedColumns      = []string{}
 )
