@@ -123,7 +123,10 @@ func GetDailyPrice(ctx context.Context, ticker string, from, to time.Time) error
 		for _, price := range historicalPrices.Historical {
 			if price.Date == stock.CreatedAt.Time.Format("2006-01-02") {
 				stock.Price = price.Close
-				stockSentimentStore.Save(ctx, stock, stock.R.Source.Name)
+				err = stockSentimentStore.Save(ctx, stock, stock.R.Source.Name)
+				if err != nil {
+					util.Log.Error().Err(err).Msg("Failed to save stock sentiment")
+				}
 				break
 			}
 		}

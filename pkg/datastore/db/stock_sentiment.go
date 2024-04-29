@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hjoshi123/fintel/infra/database"
+	"github.com/hjoshi123/fintel/infra/util"
 	datastore "github.com/hjoshi123/fintel/pkg/datastore/interface"
 	"github.com/hjoshi123/fintel/pkg/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -21,13 +22,19 @@ func NewStockSentimentStore() datastore.StockSentimentStore {
 func (s *stockSentimentStore) Save(ctx context.Context, stockSentiment *models.StockSentiment, src string) error {
 	db := database.Connect()
 
+	if stockSentiment.CreatedAt.Time.Weekday() == time.Saturday || stockSentiment.CreatedAt.Time.Weekday() == time.Sunday {
+		util.Log.Info().Msg("weekend data, skipping")
+		return nil
+	}
+
 	source, err := models.Sources(models.SourceWhere.Name.EQ(src)).One(ctx, db)
 	if err != nil {
 		return err
 	}
 
 	stockSentiment.SourceID = source.ID
-	err = stockSentiment.Insert(ctx, db, boil.Infer())
+
+	err = stockSentiment.Upsert(ctx, db, true, nil, boil.Blacklist("created_at"), boil.Infer())
 	if err != nil {
 		return err
 	}

@@ -42,8 +42,12 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 	stockResponse.NewsSentiment = make([]*models.Sentiment, 0)
 	stockResponse.SocialSentiment = make([]*models.Sentiment, 0)
 
-	effectiveSocialICI := 0.0
-	effectiveNewsICI := 0.0
+	newsCorrelationPrices := make([]float64, 0)
+	socialCorrelationPrices := make([]float64, 0)
+
+	newsCorrelationSenitment := make([]float64, 0)
+	socialCorrelationSentiment := make([]float64, 0)
+
 	for _, stockSentiment := range stockSentiments {
 		sent := new(models.Sentiment)
 		sent.DailyICI = stockSentiment.DailyIci
@@ -51,17 +55,27 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		sent.Date = &stockSentiment.CreatedAt.Time
 		sent.Volume = stockSentiment.Chatter
 
-		if stockSentiment.R.GetSource().Name == constants.StockNewsSource {
-			effectiveNewsICI += stockSentiment.DailyIci
+		switch stockSentiment.R.GetSource().Name {
+		case constants.StockNewsSource:
+			newsCorrelationPrices = append(newsCorrelationPrices, stockSentiment.Price)
+			newsCorrelationSenitment = append(newsCorrelationSenitment, stockSentiment.DailyIci)
 			stockResponse.NewsSentiment = append(stockResponse.NewsSentiment, sent)
-		} else if stockSentiment.R.GetSource().Name == constants.StockSocialSource {
-			effectiveSocialICI += stockSentiment.DailyIci
+		case constants.StockSocialSource:
+			socialCorrelationPrices = append(socialCorrelationPrices, stockSentiment.Price)
+			socialCorrelationSentiment = append(socialCorrelationSentiment, stockSentiment.DailyIci)
 			stockResponse.SocialSentiment = append(stockResponse.SocialSentiment, sent)
 		}
 	}
 
-	stockResponse.EffectiveNewsICI = (effectiveNewsICI / float64(len(stockResponse.NewsSentiment)))
-	stockResponse.EffectiveSocialICI = (effectiveSocialICI / float64(len(stockResponse.SocialSentiment)))
+	stockResponse.NewsCorrelation, err = util.Pearson(newsCorrelationPrices, newsCorrelationSenitment)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error calculating news correlation")
+	}
+
+	stockResponse.SocialCorrelation, err = util.Pearson(socialCorrelationPrices, socialCorrelationSentiment)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("error calculating social correlation")
+	}
 
 	stockResponse.TopContentsNews = make([]*models.TopContentResponse, 0)
 	stockResponse.TopContentsSocial = make([]*models.TopContentResponse, 0)
@@ -71,9 +85,10 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		topContentResponse.URL = content.URL
 		topContentResponse.PostedDate = &content.CreatedAt
 
-		if content.R.GetSource().Name == constants.StockNewsSource {
+		switch content.R.GetSource().Name {
+		case constants.StockNewsSource:
 			stockResponse.TopContentsNews = append(stockResponse.TopContentsNews, topContentResponse)
-		} else if content.R.GetSource().Name == constants.StockSocialSource {
+		case constants.StockSocialSource:
 			stockResponse.TopContentsSocial = append(stockResponse.TopContentsSocial, topContentResponse)
 		}
 	}
