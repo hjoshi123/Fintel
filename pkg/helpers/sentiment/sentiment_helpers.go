@@ -1,7 +1,9 @@
 package helpers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/hjoshi123/fintel/infra/constants"
@@ -52,8 +54,16 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		sent := new(models.Sentiment)
 		sent.DailyICI = stockSentiment.DailyIci
 		sent.ID = stockSentiment.ID
-		sent.Date = &stockSentiment.CreatedAt.Time
+		sent.Date = stockSentiment.CreatedAt.Time
 		sent.Volume = stockSentiment.Chatter
+
+		stockSentInfo := new(models.StockSentimentInfo)
+		if err := json.NewDecoder(bytes.NewReader(stockSentiment.Info.JSON)).Decode(stockSentInfo); err != nil {
+			util.Log.Error().Err(err).Msg("error decoding stock sentiment info")
+		}
+
+		sent.PositiveCount = stockSentInfo.PositiveCount
+		sent.NegativeCount = stockSentInfo.NegativeCount
 
 		switch stockSentiment.R.GetSource().Name {
 		case constants.StockNewsSource:

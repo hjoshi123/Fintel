@@ -13,12 +13,12 @@ type StockResponse struct {
 }
 
 type Sentiment struct {
-	ID            int        `json:"id" jsonapi:"primary,sentiments"`
-	Date          *time.Time `json:"date" jsonapi:"attr,sentiments"`
-	DailyICI      float64    `json:"daily_ici" jsonapi:"attr,daily_ici"`
-	Volume        int        `json:"volume" jsonapi:"attr,volume"`
-	PositiveCount int        `json:"positive_count" jsonapi:"attr,positive_count"`
-	NegativeCount int        `json:"negative_count" jsonapi:"attr,negative_count"`
+	ID            int       `json:"id" jsonapi:"primary,sentiments"`
+	Date          time.Time `json:"date" jsonapi:"attr,sentiments"`
+	DailyICI      float64   `json:"daily_ici" jsonapi:"attr,daily_ici"`
+	Volume        int       `json:"volume" jsonapi:"attr,volume"`
+	PositiveCount int       `json:"positive_count" jsonapi:"attr,positive_count"`
+	NegativeCount int       `json:"negative_count" jsonapi:"attr,negative_count"`
 }
 
 type TopContentResponse struct {
