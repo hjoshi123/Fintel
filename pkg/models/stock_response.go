@@ -14,7 +14,7 @@ type StockResponse struct {
 
 type Sentiment struct {
 	ID            int       `json:"id" jsonapi:"primary,sentiments"`
-	Date          time.Time `json:"date" jsonapi:"attr,sentiments"`
+	Date          time.Time `json:"date" jsonapi:"attr,date"`
 	DailyICI      float64   `json:"daily_ici" jsonapi:"attr,daily_ici"`
 	Volume        int       `json:"volume" jsonapi:"attr,volume"`
 	PositiveCount int       `json:"positive_count" jsonapi:"attr,positive_count"`
