@@ -40,12 +40,12 @@ func (s *SentimentStockController) Show(ctx context.Context, input api.Input) (a
 		return api.Output{}, fmt.Errorf("end time is required")
 	}
 
-	startTime, err := time.Parse("2006-01-01", startTimeString[0])
+	startTime, err := time.Parse("2006-01-02", startTimeString[0])
 	if err != nil {
 		return api.Output{}, fmt.Errorf("error parsing start time %v", err.Error())
 	}
 
-	endTime, err := time.Parse("2006-01-01", endTimeString[0])
+	endTime, err := time.Parse("2006-01-02", endTimeString[0])
 	if err != nil {
 		return api.Output{}, fmt.Errorf("error parsing end time %v", err.Error())
 	}
