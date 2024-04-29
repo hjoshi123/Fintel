@@ -16,5 +16,5 @@ func GetRunCommand() *cobra.Command {
 
 // Add subcommands of run here
 func init() {
-	run.AddCommand(ticker)
+	run.AddCommand(ticker, price)
 }

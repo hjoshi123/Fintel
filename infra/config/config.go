@@ -32,6 +32,7 @@ type Configuration struct {
 	KafkaUsername      string `mapstructure:"kafka_username"`
 	KafkaPassword      string `mapstructure:"kafka_password"`
 	AlphaVantageApiKey string `mapstructure:"alpha_vantage"`
+	FinHistoryApiKey   string `mapstructure:"fin_history"`
 }
 
 func init() {
