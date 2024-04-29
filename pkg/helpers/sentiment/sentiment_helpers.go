@@ -54,7 +54,7 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		sent := new(models.Sentiment)
 		sent.DailyICI = stockSentiment.DailyIci
 		sent.ID = stockSentiment.ID
-		sent.Date = stockSentiment.CreatedAt.Time
+		sent.Date = stockSentiment.CreatedAt.Time.Format("2006-01-02")
 		sent.Volume = stockSentiment.Chatter
 
 		stockSentInfo := new(models.StockSentimentInfo)
