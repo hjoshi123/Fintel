@@ -54,7 +54,7 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		sent := new(models.Sentiment)
 		sent.DailyICI = stockSentiment.DailyIci
 		sent.ID = stockSentiment.ID
-		sent.Date = stockSentiment.CreatedAt.Time.Format("2006-01-02")
+		sent.Date = stockSentiment.CreatedAt.Time
 		sent.Volume = stockSentiment.Chatter
 
 		stockSentInfo := new(models.StockSentimentInfo)
@@ -93,7 +93,7 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		topContentResponse := new(models.TopContentResponse)
 		topContentResponse.ID = content.ID
 		topContentResponse.URL = content.URL
-		topContentResponse.PostedDate = &content.CreatedAt
+		topContentResponse.PostedDate = content.CreatedAt
 
 		switch content.R.GetSource().Name {
 		case constants.StockNewsSource:
@@ -103,6 +103,5 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		}
 	}
 
-	util.Log.Debug().Any("stock", stockResponse).Msgf("stock response %s", ticker)
 	return stockResponse, nil
 }

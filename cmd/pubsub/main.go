@@ -27,6 +27,8 @@ func main() {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")
 	}
 
+	err = client.Subscribe(ctx, constants.StockPriceCreateTopic, stockHelpers.HandlePriceUpdate)
+
 	err = client.Consume(ctx)
 	if err != nil {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")
