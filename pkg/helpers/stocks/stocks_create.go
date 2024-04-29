@@ -50,6 +50,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	stockSentimentInfo := new(models.StockSentimentInfo)
 	stockSentimentInfo.PositiveCount = positiveCount
 	stockSentimentInfo.NegativeCount = negativeCount
+	stockSentimentInfo.NeutralCount = chatter - (positiveCount + negativeCount)
 
 	jsonInfoBytes, err := json.Marshal(stockSentimentInfo)
 	if err != nil {
