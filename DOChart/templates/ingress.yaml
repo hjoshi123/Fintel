@@ -6,8 +6,13 @@ metadata:
   name: {{ include "DOChart.componentname" (list $ (printf "%s-ingress" $service)) }}
   labels: {{- include ( printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-ingress" $service)) | nindent 4 }}
   annotations:
-    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: production-issuer
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - {{ $serviceValues.host }}
+      secretName: {{ printf "%s-tls" $service }}
   rules:
     - host: {{ $serviceValues.host }}
       http:
