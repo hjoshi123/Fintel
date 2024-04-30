@@ -12,6 +12,6 @@ spec:
       protocol: TCP
       name: {{ printf "%s-port" $service }}
       port: {{ $serviceValues.port }}
-  selector: {{- include (printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-service" $service)) | nindent 4 }}
+  selector: {{- include (printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-deployment" $service)) | nindent 4 }}
 ---
 {{ end }}
