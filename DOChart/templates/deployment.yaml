@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "DOChart.componentname" (list $ (printf "%s-deployment" $service)) }}
-  labels: {{- include ( printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-deployment" $service)) | nindent 4 }}
+  labels: {{- include (printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-deployment" $service)) | nindent 4 }}
 spec:
   replicas: {{ default $.Values.backend.replicaCount $serviceValues.replicaCount }}
   selector:
