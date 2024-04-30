@@ -60,3 +60,35 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "DOChart.componentname" -}}
+{{- $global := index . 0 -}}
+{{- $component := index . 1 | trimPrefix "-" -}}
+{{- printf "%s-%s" (include "slyeks.fullname" $global | trunc (sub 62 (len $component) | int) | trimSuffix "-" ) $component | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "DOChart.labels.backend.api" -}}
+{{- $global := index . 0 -}}
+{{- $component := index . 1 | trimPrefix "-" -}}
+{{ include "DOChart.labels" $global }}
+{{- if .Values.backend.api.componentName }}
+app.kubernetes.io/component: {{ printf "%s-%s ".Values.backend.api.componentName $component }}
+{{- end }}
+{{- end }}
+
+
+{{- define "DOChart.labels.backend.pubsub" -}}
+{{- $global := index . 0 -}}
+{{- $component := index . 1 | trimPrefix "-" -}}
+{{ include "DOChart.labels" $global }}
+{{- if .Values.backend.pubsub.componentName }}
+app.kubernetes.io/component: {{ printf "%s-%s ".Values.backend.pubsub.componentName $component }}
+{{- end }}
+{{- end }}
+
+{{- define "DOChart.labels.frontend" -}}
+{{ include "DOChart.labels" . }}
+{{- if .Values.frontend.componentName }}
+app.kubernetes.io/component: {{ .Values.frontend.componentName }}
+{{- end }}
+{{- end }}

@@ -25,3 +25,5 @@ go.work
 */*/tasker/tasker
 
 */.log
+
+DOChart/*/*_secrets.yaml

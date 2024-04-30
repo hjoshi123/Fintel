@@ -1,15 +1,17 @@
+{{- range $service := (list "api") }}
+{{- $serviceValues := index $.Values.backend $service }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "DOChart.fullname" . }}
-  labels:
-    {{- include "DOChart.labels" . | nindent 4 }}
+  name: {{ include "DOChart.componentname" (list $ (printf "%s-service" $service)) }}
+  labels: {{- include "DOChart.labels.backend.api" (list $ (printf "%s-service" $service)) | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - targetPort: {{ printf "%s-port" $service }}
       protocol: TCP
-      name: http
-  selector:
-    {{- include "DOChart.selectorLabels" . | nindent 4 }}
+      name: {{ printf "%s-port" $service }}
+      port: {{ $serviceValues.port }}
+  selector: {{- include "DOChart.labels.backend.api" (list $ (printf "%s-service" $service)) | nindent 4 }}
+---
+{{ end }}
