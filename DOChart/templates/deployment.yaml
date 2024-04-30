@@ -18,13 +18,14 @@ spec:
         - name: {{ $.Chart.Name }}-{{ $service }}
           image: "{{ $serviceValues.image }}:{{ $serviceValues.tag }}"
           imagePullPolicy: {{ default "IfNotPresent" $serviceValues.imagePullPolicy }}
-          {{- range $envvars := $serviceValues.envList }}
-          - name: {{ $envvars }}
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-secret" $service }}
-                key: {{ $envvars }}
-          {{- end }}
+          env:
+            {{- range $envvars := $serviceValues.envList }}
+            - name: {{ $envvars }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-secret" $service }}
+                  key: {{ $envvars }}
+            {{- end }}
           ports:
             - name: {{ (printf "%s-port" $service) }}
               containerPort: {{ $serviceValues.port }}
