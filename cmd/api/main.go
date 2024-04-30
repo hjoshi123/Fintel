@@ -74,7 +74,7 @@ func RunApiServer(cmd *cobra.Command, args []string) error {
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8000", "http://localhost:3000"},
+		AllowedOrigins:   []string{"http://localhost:8000", "http://localhost:3000", "http://localhost:5173", "https://fintel.hjoshi.me"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodOptions},
 	})

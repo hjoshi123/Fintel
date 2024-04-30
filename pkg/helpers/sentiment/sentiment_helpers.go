@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"sort"
 	"time"
 
 	"github.com/hjoshi123/fintel/infra/constants"
@@ -101,6 +102,14 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		case constants.StockSocialSource:
 			stockResponse.TopContentsSocial = append(stockResponse.TopContentsSocial, topContentResponse)
 		}
+	}
+
+	sort.Slice(stockResponse.TopContentsSocial, func(i, j int) bool {
+		return stockResponse.TopContentsSocial[i].PostedDate.After(stockResponse.TopContentsSocial[j].PostedDate)
+	})
+
+	if len(stockResponse.TopContentsSocial) > 10 {
+		stockResponse.TopContentsSocial = stockResponse.TopContentsSocial[:10]
 	}
 
 	return stockResponse, nil
