@@ -13,12 +13,12 @@ spec:
     metadata:
       labels: {{- include ( printf "DOChart.labels.backend.%s" $service) (list $ (printf "%s-deployment" $service)) | nindent 8 }}
     spec:
+      imagePullSecrets:
+        - name: {{ $serviceValues.imagePullSecrets }}
       serviceAccountName: {{ include "DOChart.serviceAccountName" $ }}
       containers:
         - name: {{ $.Chart.Name }}-{{ $service }}
           image: "{{ $serviceValues.image }}:{{ $serviceValues.tag }}"
-          imagePullSecrets:
-            - name: {{ $serviceValues.imagePullSecrets }}
           imagePullPolicy: {{ default "IfNotPresent" $serviceValues.imagePullPolicy }}
           env:
             {{- range $envvars := $serviceValues.envList }}
