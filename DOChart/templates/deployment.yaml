@@ -17,6 +17,8 @@ spec:
       containers:
         - name: {{ $.Chart.Name }}-{{ $service }}
           image: "{{ $serviceValues.image }}:{{ $serviceValues.tag }}"
+          imagePullSecrets:
+            - name: {{ $serviceValues.imagePullSecrets }}
           imagePullPolicy: {{ default "IfNotPresent" $serviceValues.imagePullPolicy }}
           env:
             {{- range $envvars := $serviceValues.envList }}
