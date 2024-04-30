@@ -67,10 +67,17 @@ func RunApiServer(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		client.MigrateApply(ctx, &atlasexec.MigrateApplyParams{
+		migApply, err := client.MigrateApply(ctx, &atlasexec.MigrateApplyParams{
 			URL: fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 				config.Spec.DBUser, config.Spec.DBPassword, config.Spec.DBHost, config.Spec.DBPort, config.Spec.DBName),
 		})
+
+		if err != nil {
+			logger.Fatal().Err(err).Msg("failed to apply migrations")
+			return err
+		}
+
+		logger.Info().Int("migrate", len(migApply.Applied)).Msg("migrations applied")
 	}
 
 	c := cors.New(cors.Options{
