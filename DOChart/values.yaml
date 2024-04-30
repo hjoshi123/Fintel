@@ -11,10 +11,10 @@ fullnameOverride: ""
 backend:
   api:
     replicaCount: 1
-    image: gcr.io/dotest-311111/dotest-api
+    image: registry.digitalocean.com/fintel/api
     imagePullPolicy: Always
     componentName: api
-    tag: latest
+    tag: v0.0.1
     port: 8080
     envList:
       - db_host
@@ -36,10 +36,10 @@ backend:
       - fin_history
   pubsub:
     replicaCount: 1
-    image: gcr.io/dotest-311111/dotest-pubsub
+    image: registry.digitalocean.com/fintel/pubsub
     imagePullPolicy: Always
     componentName: pubsub
-    tag: latest
+    tag: v0.0.1
     port: 8081
     envList:
       - db_host

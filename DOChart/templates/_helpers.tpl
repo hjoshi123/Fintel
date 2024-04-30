@@ -72,7 +72,7 @@ Create the name of the service account to use
 {{- $component := index . 1 | trimPrefix "-" -}}
 {{ include "DOChart.labels" $global }}
 {{- if .Values.backend.api.componentName }}
-app.kubernetes.io/component: {{ printf "%s-%s ".Values.backend.api.componentName $component }}
+app.kubernetes.io/component: {{ printf "%s-%s" .Values.backend.api.componentName $component }}
 {{- end }}
 {{- end }}
 
@@ -82,7 +82,7 @@ app.kubernetes.io/component: {{ printf "%s-%s ".Values.backend.api.componentName
 {{- $component := index . 1 | trimPrefix "-" -}}
 {{ include "DOChart.labels" $global }}
 {{- if .Values.backend.pubsub.componentName }}
-app.kubernetes.io/component: {{ printf "%s-%s ".Values.backend.pubsub.componentName $component }}
+app.kubernetes.io/component: {{ printf "%s-%s" .Values.backend.pubsub.componentName $component }}
 {{- end }}
 {{- end }}
 
