@@ -12,7 +12,7 @@ spec:
     - host: {{ $serviceValues.host }}
       http:
         paths:
-          - path: /
+          - path: /v0
             pathType: Prefix
             backend:
               service:

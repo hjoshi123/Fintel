@@ -13,6 +13,7 @@ backend:
     replicaCount: 1
     image: registry.digitalocean.com/fintel/api
     imagePullPolicy: Always
+    host: fintel.hjoshi.me
     componentName: api
     tag: v0.0.1
     port: 8080
