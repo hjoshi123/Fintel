@@ -14,9 +14,9 @@ func main() {
 
 	util.Logger()
 
-	client := pubsub.NewKafkaPubSub()
+	client := pubsub.NewKafkaPubSub(ctx)
 
-	stockHelp := stockHelpers.NewStockHelpers()
+	stockHelp := stockHelpers.NewStockHelpers(ctx)
 	err := client.Subscribe(ctx, constants.StocksNewsCreateTopic, stockHelp.StockNewsCreate)
 	if err != nil {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")

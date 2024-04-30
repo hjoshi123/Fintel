@@ -14,6 +14,7 @@ import (
 	datastore "github.com/hjoshi123/fintel/pkg/datastore/db"
 	datastoreIface "github.com/hjoshi123/fintel/pkg/datastore/interface"
 	"github.com/hjoshi123/fintel/pkg/models"
+	infoModels "github.com/hjoshi123/fintel/pkg/models/info"
 	"github.com/volatiletech/null/v8"
 )
 
@@ -23,9 +24,9 @@ type StockHelpers struct {
 	TopContentStore datastoreIface.TopContentStore
 }
 
-func NewStockHelpers() *StockHelpers {
+func NewStockHelpers(ctx context.Context) *StockHelpers {
 	return &StockHelpers{
-		Pubsub:          pubsub.NewKafkaPubSub(),
+		Pubsub:          pubsub.NewKafkaPubSub(ctx),
 		SentimentStore:  datastore.NewStockSentimentStore(),
 		TopContentStore: datastore.NewTopContentStore(),
 	}
@@ -47,7 +48,7 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 	stockSentiment.Chatter = chatter
 	positiveCount, negativeCount := getPositiveAndNegativeCount(alphaNews.Ticker, alphaNews.Feed)
 
-	stockSentimentInfo := new(models.StockSentimentInfo)
+	stockSentimentInfo := new(infoModels.StockSentimentInfo)
 	stockSentimentInfo.PositiveCount = positiveCount
 	stockSentimentInfo.NegativeCount = negativeCount
 	stockSentimentInfo.NeutralCount = chatter - (positiveCount + negativeCount)
@@ -85,6 +86,20 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		topContent.Ticker = alphaNews.Ticker
 		topContent.URL = feed.URL
 
+		topContentInfo := new(infoModels.TopContentInfo)
+		topContentInfo.Title = feed.Title
+		topContentInfo.Summary = feed.Summary
+
+		jsonBytes, err := topContentInfo.Scan()
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error scanning top content info")
+		}
+
+		topContent.Info = null.JSON{
+			JSON:  jsonBytes,
+			Valid: true,
+		}
+
 		parsedTime, err := time.Parse("20060102", strings.Split(feed.TimePublished, "T")[0])
 		if err != nil {
 			util.Log.Error().Err(err).Msg("error parsing time")
@@ -113,13 +128,13 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 	stockSentiment.Ticker = redditResponse.Ticker
 	stockSentiment.Chatter = len(redditResponse.Feed)
 
-	stockSentimentInfo := new(models.StockSentimentInfo)
+	stockSentimentInfo := new(infoModels.StockSentimentInfo)
 
 	positiveCount, negativeCount, neutralCount := 0, 0, 0
 	for _, post := range redditResponse.Feed {
 		if post.OverallSentimentScore.Compound > 0.15 {
 			positiveCount++
-		} else if post.OverallSentimentScore.Compound < -0.15 {
+		} else if post.OverallSentimentScore.Compound < 0 {
 			negativeCount++
 		} else {
 			neutralCount++
@@ -161,6 +176,20 @@ func (s *StockHelpers) StockSocialMediaCreate(ctx context.Context, msg *models.M
 		topContent := new(models.TopContent)
 		topContent.Ticker = redditResponse.Ticker
 		topContent.URL = post.PostURL
+
+		topContentInfo := new(infoModels.TopContentInfo)
+		topContentInfo.Title = post.PostTitle
+		topContentInfo.Summary = post.Body
+
+		jsonBytes, err := topContentInfo.Scan()
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error scanning top content info")
+		}
+
+		topContent.Info = null.JSON{
+			JSON:  jsonBytes,
+			Valid: true,
+		}
 
 		parsedTime, err := time.Parse("2006-01-02", strings.Split(post.PostTime, " ")[0])
 		if err != nil {

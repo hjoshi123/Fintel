@@ -22,8 +22,8 @@ import (
 type producerProvider struct {
 	transactionIdGenerator int32
 	producersLock          sync.Mutex
-	producers              []sarama.SyncProducer
-	producerProvider       func() sarama.SyncProducer
+	producers              []sarama.AsyncProducer
+	producerProvider       func() sarama.AsyncProducer
 }
 
 type KafkaPubSub struct {
@@ -31,13 +31,14 @@ type KafkaPubSub struct {
 	handler          sync.Map
 	ready            atomic.Int32
 	kfkClient        sarama.Client
+	shutdownContext  context.Context
+	shutdownFunc     context.CancelFunc
 }
 
-func (p *producerProvider) borrow() (producer sarama.SyncProducer) {
+func (p *producerProvider) borrow() (producer sarama.AsyncProducer) {
 	p.producersLock.Lock()
 	defer p.producersLock.Unlock()
 
-	util.Log.Info().Msgf("Borrowing producer %v", len(p.producers))
 	if len(p.producers) == 0 {
 		for {
 			producer = p.producerProvider()
@@ -54,7 +55,7 @@ func (p *producerProvider) borrow() (producer sarama.SyncProducer) {
 	return
 }
 
-func (p *producerProvider) release(producer sarama.SyncProducer) {
+func (p *producerProvider) release(producer sarama.AsyncProducer) {
 	p.producersLock.Lock()
 	defer p.producersLock.Unlock()
 
@@ -79,13 +80,16 @@ func (p *producerProvider) clear() {
 
 func newProducerProvider(brokers []string, config *sarama.Config) *producerProvider {
 	provider := &producerProvider{}
-	provider.producerProvider = func() sarama.SyncProducer {
+	provider.producerProvider = func() sarama.AsyncProducer {
 		producerConfig := *config
 		// Append transactionIdGenerator to current config.Producer.Transaction.ID to ensure transaction-id uniqueness.
-		if producerConfig.Producer.Transaction.ID != "" {
-			producerConfig.Producer.Transaction.ID += "-" + fmt.Sprint(atomic.AddInt32(&provider.transactionIdGenerator, 1))
+		suffix := provider.transactionIdGenerator
+		// Append transactionIdGenerator to current config.Producer.Transaction.ID to ensure transaction-id uniqueness.
+		if config.Producer.Transaction.ID != "" {
+			provider.transactionIdGenerator++
+			config.Producer.Transaction.ID = config.Producer.Transaction.ID + "-" + fmt.Sprint(suffix)
 		}
-		producer, err := sarama.NewSyncProducer(brokers, &producerConfig)
+		producer, err := sarama.NewAsyncProducer(brokers, &producerConfig)
 		if err != nil {
 			util.Log.Error().Err(err).Msg("Failed to create producer")
 			return nil
@@ -99,13 +103,15 @@ var (
 	pubsubOnce sync.Once
 )
 
-func NewKafkaPubSub() PubSub {
+func NewKafkaPubSub(ctx context.Context) PubSub {
 	kf := new(KafkaPubSub)
 	kf.handler = sync.Map{}
 	kf.ready = atomic.Int32{}
+	shutdownContext, shutdownFunc := context.WithCancel(ctx)
+	kf.shutdownContext = shutdownContext
+	kf.shutdownFunc = shutdownFunc
 	kf.producerProvider = newProducerProvider(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 	pubsubOnce.Do(func() {
-		util.Log.Info().Any("msg", config.Spec).Msg("Creating kafka client")
 		kfkClient, err := sarama.NewClient(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
 		if err != nil {
 			util.Log.Error().Err(err).Msg("Failed to create kafka client")
@@ -115,6 +121,15 @@ func NewKafkaPubSub() PubSub {
 		kf.kfkClient = kfkClient
 	})
 	return kf
+}
+
+func (kf *KafkaPubSub) Shutdown() {
+	kf.shutdownFunc()
+	kf.producerProvider.clear()
+	if kf.kfkClient != nil {
+		kf.kfkClient.Close()
+	}
+	util.Log.Info().Msg("KafkaPubSub shutdown complete.")
 }
 
 func (kp *KafkaPubSub) Publish(ctx context.Context, message *models.Message) error {
@@ -132,18 +147,35 @@ func (kp *KafkaPubSub) Publish(ctx context.Context, message *models.Message) err
 		Value: sarama.StringEncoder(message.Data),
 	}
 
-	_, _, err = producer.SendMessage(msg)
-	if err != nil {
-		util.Log.Error().Err(err).Msg("Failed to send message")
-		if err := producer.AbortTxn(); err != nil {
-			util.Log.Error().Err(err).Msg("Failed to abort transaction")
-			return err
-		}
-		return err
-	}
+	producer.Input() <- msg
 
 	if err := producer.CommitTxn(); err != nil {
-		util.Log.Error().Err(err).Msg("Failed to commit transaction")
+		for {
+			if producer.TxnStatus()&sarama.ProducerTxnFlagFatalError != 0 {
+				// fatal error. need to recreate producer.
+				util.Log.Error().Err(err).Msg("Fatal error occured. Recreating producer")
+				kp.producerProvider.clear() // Clear erroneous producers
+				kp.producerProvider = newProducerProvider(strings.Split(config.Spec.KafkaBrokers, ","), GetSaramaConfig())
+				continue
+			}
+
+			// If producer is in abortable state, try to abort current transaction.
+			if producer.TxnStatus()&sarama.ProducerTxnFlagAbortableError != 0 {
+				err = producer.AbortTxn()
+				if err != nil {
+					// If an error occured just retry it.
+					util.Log.Error().Err(err).Msg("Failed to abort transaction")
+					continue
+				}
+				break
+			}
+			// if not you can retry
+			err = producer.CommitTxn()
+			if err != nil {
+				util.Log.Error().Err(err).Msg("Failed to commit transaction")
+				continue
+			}
+		}
 		return err
 	}
 

@@ -12,6 +12,7 @@ import (
 	datastore "github.com/hjoshi123/fintel/pkg/datastore/db"
 	datastoreIface "github.com/hjoshi123/fintel/pkg/datastore/interface"
 	"github.com/hjoshi123/fintel/pkg/models"
+	infoModels "github.com/hjoshi123/fintel/pkg/models/info"
 )
 
 type SentimentHelpers struct {
@@ -58,13 +59,14 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		sent.Date = stockSentiment.CreatedAt.Time
 		sent.Volume = stockSentiment.Chatter
 
-		stockSentInfo := new(models.StockSentimentInfo)
+		stockSentInfo := new(infoModels.StockSentimentInfo)
 		if err := json.NewDecoder(bytes.NewReader(stockSentiment.Info.JSON)).Decode(stockSentInfo); err != nil {
 			util.Log.Error().Err(err).Msg("error decoding stock sentiment info")
 		}
 
 		sent.PositiveCount = stockSentInfo.PositiveCount
 		sent.NegativeCount = stockSentInfo.NegativeCount
+		sent.NeutralCount = stockSentInfo.NeutralCount
 
 		switch stockSentiment.R.GetSource().Name {
 		case constants.StockNewsSource:
@@ -95,6 +97,15 @@ func (s *SentimentHelpers) GetSentimentForStock(ctx context.Context, ticker stri
 		topContentResponse.ID = content.ID
 		topContentResponse.URL = content.URL
 		topContentResponse.PostedDate = content.CreatedAt
+
+		topContentInfo := new(infoModels.TopContentInfo)
+		err = topContentInfo.Value(content.Info.JSON)
+		if err != nil {
+			util.Log.Error().Err(err).Msg("error decoding top content info")
+		} else {
+			topContentResponse.Title = topContentInfo.Title
+			topContentResponse.Summary = topContentInfo.Summary
+		}
 
 		switch content.R.GetSource().Name {
 		case constants.StockNewsSource:

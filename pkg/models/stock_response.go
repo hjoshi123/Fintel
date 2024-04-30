@@ -26,4 +26,6 @@ type TopContentResponse struct {
 	ID         int       `json:"id" jsonapi:"primary,top_contents"`
 	URL        string    `json:"url" jsonapi:"attr,url"`
 	PostedDate time.Time `json:"posted_date" jsonapi:"attr,posted_date,iso8601"`
+	Title      string    `json:"title" jsonapi:"attr,title"`
+	Summary    string    `json:"summary" jsonapi:"attr,summary"`
 }
