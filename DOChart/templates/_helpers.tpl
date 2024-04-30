@@ -64,7 +64,7 @@ Create the name of the service account to use
 {{- define "DOChart.componentname" -}}
 {{- $global := index . 0 -}}
 {{- $component := index . 1 | trimPrefix "-" -}}
-{{- printf "%s-%s" (include "slyeks.fullname" $global | trunc (sub 62 (len $component) | int) | trimSuffix "-" ) $component | trimSuffix "-" -}}
+{{- printf "%s-%s" (include "DOChart.fullname" $global | trunc (sub 62 (len $component) | int) | trimSuffix "-" ) $component | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "DOChart.labels.backend.api" -}}
