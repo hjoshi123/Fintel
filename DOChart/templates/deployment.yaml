@@ -22,7 +22,7 @@ spec:
           - name: {{ $envvars }}
             valueFrom:
               secretKeyRef:
-                name: {{ include "DOChart.componentname" (list $ (printf "%s-secret" $service)) }}
+                name: {{ printf "%s-secret" $service }}
                 key: {{ $envvars }}
           {{- end }}
           ports:
