@@ -26,4 +26,6 @@ go.work
 
 */.log
 
-DOChart/*/*_secrets.yaml
+dochart/*/*_secrets.yaml
+dochart/issuer.yaml
+dochart/issuer_secret.yaml
