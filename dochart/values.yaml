@@ -61,6 +61,16 @@ backend:
       - version
       - fin_history
 
+frontend:
+  react:
+    replicaCount: 1
+    image: registry.digitalocean.com/fintel/frontend
+    imagePullPolicy: Always
+    tag: v0.0.3
+    port: 80
+    componentName: react
+    envList:
+      - REACT_APP_FETCH_URL
 serviceAccount:
   # Specifies whether a service account should be created
   create: true

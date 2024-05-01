@@ -86,9 +86,11 @@ app.kubernetes.io/component: {{ (printf "%s" $component) }}
 {{- end }}
 {{- end }}
 
-{{- define "DOChart.labels.frontend" -}}
-{{ include "DOChart.labels" . }}
-{{- if .Values.frontend.componentName }}
-app.kubernetes.io/component: {{ .Values.frontend.componentName }}
+{{- define "DOChart.labels.frontend.react" -}}
+{{- $global := index . 0 -}}
+{{- $component := index . 1 | trimPrefix "-" -}}
+{{ include "DOChart.labels" $global }}
+{{- if $global.Values.frontend.react.componentName }}
+app.kubernetes.io/component: {{ (printf "%s" $component) }}
 {{- end }}
 {{- end }}

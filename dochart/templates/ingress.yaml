@@ -13,6 +13,11 @@ spec:
     - hosts:
         - {{ $serviceValues.host }}
       secretName: {{ printf "%s-tls" $service }}
+  defaultBackend:
+    service:
+      name: {{ include "DOChart.componentname" (list $ (printf "react-service")) }}
+      port:
+        name: {{ printf "react-port" }}
   rules:
     - host: {{ $serviceValues.host }}
       http:

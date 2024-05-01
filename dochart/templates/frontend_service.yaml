@@ -1,0 +1,17 @@
+{{- range $service := (list "react") }}
+{{- $serviceValues := index $.Values.frontend $service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "DOChart.componentname" (list $ (printf "%s-service" $service)) }}
+  labels: {{- include (printf "DOChart.labels.frontend.%s" $service) (list $ (printf "%s-service" $service)) | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - targetPort: {{ printf "%s-port" $service }}
+      protocol: TCP
+      name: {{ printf "%s-port" $service }}
+      port: {{ $serviceValues.port }}
+  selector: {{- include (printf "DOChart.labels.frontend.%s" $service) (list $ (printf "%s-deployment" $service)) | nindent 4 }}
+---
+{{ end }}
