@@ -1,8 +1,10 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -17,6 +19,15 @@ var (
 	Log  zerolog.Logger
 	once sync.Once
 )
+
+type LineInfoHook struct{}
+
+func (h LineInfoHook) Run(e *zerolog.Event, l zerolog.Level, msg string) {
+	_, file, line, ok := runtime.Caller(0)
+	if ok {
+		e.Str("line", fmt.Sprintf("%s:%d", file, line))
+	}
+}
 
 func Logger() zerolog.Logger {
 	once.Do(func() {
@@ -48,24 +59,15 @@ func Logger() zerolog.Logger {
 			output = zerolog.MultiLevelWriter(output, os.Stderr, fileLogger)
 		}
 
-		var gitRevision string
+		buildInfo, _ := debug.ReadBuildInfo()
 
-		buildInfo, ok := debug.ReadBuildInfo()
-		if ok {
-			for _, v := range buildInfo.Settings {
-				if v.Key == "vcs.revision" {
-					gitRevision = v.Value
-					break
-				}
-			}
-		}
-
+		var lineInfoHook LineInfoHook
 		Log = zerolog.New(output).
 			Level(logLevel).
+			Hook(lineInfoHook).
 			With().
 			Timestamp().
 			Str("go_version", buildInfo.GoVersion).
-			Str("git_revision", gitRevision).
 			Str("version", config.Spec.Version).
 			Logger()
 	})

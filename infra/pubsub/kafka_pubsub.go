@@ -22,8 +22,8 @@ import (
 type producerProvider struct {
 	transactionIdGenerator int32
 	producersLock          sync.Mutex
-	producers              []sarama.AsyncProducer
-	producerProvider       func() sarama.AsyncProducer
+	producers              []sarama.SyncProducer
+	producerProvider       func() sarama.SyncProducer
 }
 
 type KafkaPubSub struct {
@@ -35,7 +35,7 @@ type KafkaPubSub struct {
 	shutdownFunc     context.CancelFunc
 }
 
-func (p *producerProvider) borrow() (producer sarama.AsyncProducer) {
+func (p *producerProvider) borrow() (producer sarama.SyncProducer) {
 	p.producersLock.Lock()
 	defer p.producersLock.Unlock()
 
@@ -55,7 +55,7 @@ func (p *producerProvider) borrow() (producer sarama.AsyncProducer) {
 	return
 }
 
-func (p *producerProvider) release(producer sarama.AsyncProducer) {
+func (p *producerProvider) release(producer sarama.SyncProducer) {
 	p.producersLock.Lock()
 	defer p.producersLock.Unlock()
 
@@ -80,7 +80,7 @@ func (p *producerProvider) clear() {
 
 func newProducerProvider(brokers []string, config *sarama.Config) *producerProvider {
 	provider := &producerProvider{}
-	provider.producerProvider = func() sarama.AsyncProducer {
+	provider.producerProvider = func() sarama.SyncProducer {
 		producerConfig := *config
 		// Append transactionIdGenerator to current config.Producer.Transaction.ID to ensure transaction-id uniqueness.
 		suffix := provider.transactionIdGenerator
@@ -89,7 +89,7 @@ func newProducerProvider(brokers []string, config *sarama.Config) *producerProvi
 			provider.transactionIdGenerator++
 			config.Producer.Transaction.ID = config.Producer.Transaction.ID + "-" + fmt.Sprint(suffix)
 		}
-		producer, err := sarama.NewAsyncProducer(brokers, &producerConfig)
+		producer, err := sarama.NewSyncProducer(brokers, &producerConfig)
 		if err != nil {
 			util.Log.Error().Err(err).Msg("Failed to create producer")
 			return nil
@@ -147,7 +147,17 @@ func (kp *KafkaPubSub) Publish(ctx context.Context, message *models.Message) err
 		Value: sarama.StringEncoder(message.Data),
 	}
 
-	producer.Input() <- msg
+	_, _, err = producer.SendMessage(msg)
+	if err != nil {
+		util.Log.Error().Err(err).Msg("Failed to send message")
+		if producer.TxnStatus()&sarama.ProducerTxnFlagAbortableError != 0 {
+			if err := producer.AbortTxn(); err != nil {
+				util.Log.Error().Err(err).Msg("Failed to abort transaction")
+				return err
+			}
+		}
+		return err
+	}
 
 	if err := producer.CommitTxn(); err != nil {
 		for {

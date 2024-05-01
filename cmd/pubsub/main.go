@@ -17,7 +17,12 @@ func main() {
 	client := pubsub.NewKafkaPubSub(ctx)
 
 	stockHelp := stockHelpers.NewStockHelpers(ctx)
-	err := client.Subscribe(ctx, constants.StocksNewsCreateTopic, stockHelp.StockNewsCreate)
+	err := client.Subscribe(ctx, constants.StocksCreateTopic, stockHelp.StocksCreateGeneric)
+	if err != nil {
+		util.Log.Fatal().Err(err).Msg("Failed to consume message")
+	}
+
+	err = client.Subscribe(ctx, constants.StocksNewsCreateTopic, stockHelp.StockNewsCreate)
 	if err != nil {
 		util.Log.Fatal().Err(err).Msg("Failed to consume message")
 	}

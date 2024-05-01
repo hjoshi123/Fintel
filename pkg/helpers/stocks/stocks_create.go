@@ -32,6 +32,11 @@ func NewStockHelpers(ctx context.Context) *StockHelpers {
 	}
 }
 
+func (s *StockHelpers) StocksCreateGeneric(ctx context.Context, msg *models.Message) error {
+	util.Log.Info().Str("data", msg.Data).Msg("stock create generic")
+	return nil
+}
+
 func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message) error {
 	alphaNews := new(AlphaVantageNewsResponse)
 	if err := json.NewDecoder(strings.NewReader(msg.Data)).Decode(alphaNews); err != nil {
