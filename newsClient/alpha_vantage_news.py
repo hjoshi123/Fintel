@@ -17,7 +17,7 @@ config = {
     'sasl.password': os.getenv('CLOUD_SECRET')
 }
 
-def fetch_alpha_vantage_news(ticker, time_from, limit):
+def fetch_alpha_vantage_news(ticker, time_from,time_to, limit):
     """
     Fetch news data from Alpha Vantage for a specific ticker.
 
@@ -28,7 +28,7 @@ def fetch_alpha_vantage_news(ticker, time_from, limit):
     """
    # url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=AAPL&apikey=demo'
     # The URL to fetch data from Alpha Vantage API
-    url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&time_from={time_from}&limit={limit}&apikey={os.getenv("ALPHAVANTAGE_API_KEY")}'
+    url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&time_from={time_from}&time_to={time_to}&limit=1000&sort=LATEST&apikey={os.getenv("ALPHAVANTAGE_API_KEY")}'
 
     session = Session()  # Creating a new session to manage connections
 
@@ -48,39 +48,47 @@ def fetch_alpha_vantage_news(ticker, time_from, limit):
 
 def ingest_news_to_kafka(ticker, limit):
     print(f"Ingesting news for {ticker}...")
-    now = datetime.now()
-    yesterday = now - timedelta(days=1)
-    print(yesterday.strftime("%Y%m%dT0000"))
-#    The time range of the news articles you are targeting, in YYYYMMDDTHHMM format. I want todays news
-    time_from = yesterday.strftime("%Y%m%dT0000")
+    # now = datetime.now()
+    # thirty_days_ago = now - timedelta(days=30)
+    # time_to = now.strftime("%Y%m%dT0000")
+    # time_from = thirty_days_ago.strftime("%Y%m%dT0000")
+    time_from="20240401T0000"
+    time_to="20240411T0000"
     # Fetch news data
-    news_data = fetch_alpha_vantage_news(ticker, time_from, limit)
-    if news_data is not None:
-        # Add the ticker to the news data
-        news_data["ticker"] = ticker 
-        # Produce a new message to the Kafka topic 'stocks.news.create'
-        producer = Producer(config)
-        producer.produce("stocks.news.create", json.dumps(news_data))
-        print(f"News for {ticker} ingested successfully!")
-        producer.flush()
-def ingest_news_from_file():
+    news_data = fetch_alpha_vantage_news(ticker, time_from,time_to, limit)
+    # put the news in a json file
+    with open('msft.json', 'w') as f:
+        json.dump(news_data, f)        
+
+    # if news_data is not None:
+    #     # Add the ticker to the news data
+    #     news_data["ticker"] = ticker 
+    #     # Produce a new message to the Kafka topic 'stocks.news.create'
+    #     producer = Producer(config)
+    #     producer.produce("stocks.news.create", json.dumps(news_data))
+    #     print(f"News for {ticker} ingested successfully!")
+    #     producer.flush()
+def ingest_news_from_file(ticker):
     # store the news in a json file
     # read from news_GOOG.json
-    with open('news_GOOG.json', 'r') as f:
-        data = json.load(f)
-    # Produce a new message to the Kafka topic 'stocks.news.create'
-    producer = Producer(config)
-    producer.produce("stocks.news.create", json.dumps(data))
-    print(f"News from file ingested successfully!")
-    producer.flush()
-    #print(f"News for {ticker} ingested successfully!")
+    # loop through the .json files in the data folder
+    os.chdir("data")
+    for file in os.listdir():
+        if file.endswith('.json'):  # make sure the file is a JSON file
+            with open(file, 'r') as f:
+                file_contents = json.load(f)
+            producer = Producer(config)
+            producer.produce("stocks.news.create", json.dumps(file_contents))
+            print(f"News from file {file} ingested successfully!")
+            producer.flush()
+            print(f"News for {ticker} ingested successfully!")
 
 def main():
     # Tickers for which to fetch news
-    ticker = "AAPL"
+    ticker = "MSFT"
     # The maximum number of news items to fetch
-    limit = 100
-    ingest_news_to_kafka(ticker, limit)
+    ingest_news_to_kafka(ticker,1000)
+    #ingest_news_from_file("MSFT")
     time.sleep(5)  # Sleep for 5 seconds before fetching news for the next ticker
    
 if __name__ == "__main__":

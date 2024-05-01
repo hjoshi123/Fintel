@@ -7,6 +7,7 @@ import pprint
 import operator
 import datetime
 import os
+import pandas as pd
 from dotenv import load_dotenv
 from praw.models import MoreComments
 from confluent_kafka import Producer
@@ -85,7 +86,7 @@ def run(sub, ticker,company, time_from):
             body = post.selftext
             post_url = post.url
             comments = []
-            for c in post.comments:
+            for c in post.comments[:150]:
                if isinstance(c, MoreComments):
                   continue
                comments.append(c.body)
@@ -120,15 +121,30 @@ def ingest_reddit_data_to_kafka(data):
    except Exception as e:
       print(f"Error in ingest_reddit_data_to_kafka: {e}")
 
-# if __name__ == "__main__":
-#    try:
-#       sub = "wallstreetbets"
-#       ticker="NVDA"
-#       company = "Nvidia"
-#       time_from = "day"
-#       res = run(sub, ticker,company, time_from)
-#       with open('reddit_data.json', 'w') as f: 
-#          json.dump(res, f, indent=4)
-#       #ingest_reddit_data_to_kafka(res)
-#    except Exception as e:
-#       print(f"Error in main: {e}")
+
+def ingest_reddit_data_to_kafka_from_file():
+   try:
+      os.chdir("data")
+      for file in os.listdir():
+         if file.endswith('.json'):  # make sure the file is a JSON file
+            with open(file, 'r') as f:
+               file_contents = json.load(f)
+               producer = Producer(config)
+               producer.produce("stocks.social.create", json.dumps(file_contents))
+               print(f"Reddit data ingested successfully!")
+               producer.flush()
+   except Exception as e:
+      print(f"Error in ingest_reddit_data_to_kafka: {e}")
+      
+if __name__ == "__main__":
+   try:
+      sub = "wallstreetbets"
+      time_from = "month"
+      ticker = "TSLA"
+      company="Tesla"
+      #res = run(sub, ticker,company, time_from)
+      # read from a csv file
+      tickers = pd.read_csv("../stocks/stocklist.csv")
+         
+   except Exception as e:
+      print(f"Error in main: {e}")
