@@ -67,7 +67,7 @@ frontend:
     image: registry.digitalocean.com/fintel/frontend
     imagePullPolicy: Always
     imagePullSecrets: fintel
-    tag: v0.0.3
+    tag: v0.0.6
     port: 80
     componentName: react
     envList:
