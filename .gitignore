@@ -20,6 +20,7 @@
 # Go workspace file
 go.work
 .env
+<<<<<<< HEAD
 */*/pubsub/finsub
 
 */*/tasker/tasker
@@ -30,3 +31,6 @@ dochart/templates/api_secrets.yaml
 dochart/templates/pubsub_secrets.yaml
 dochart/issuer.yaml
 dochart/issuer_secret.yaml
+*/*/finsub
+*/*/__pycache__
+*/.vscode

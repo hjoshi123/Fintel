@@ -1,56 +1,90 @@
-from transformers import BertTokenizer, BertForSequenceClassification
-from summarizer import Summarizer
-import torch
+"""Simple spacy & vaderSentiment based analyzer."""
 
-def load_model_and_tokenizer():
-    # Load FinBERT tokenizer and model
-    tokenizer = BertTokenizer.from_pretrained('yiyanghkust/finbert-tone', do_lower_case=True)
-    model = BertForSequenceClassification.from_pretrained('yiyanghkust/finbert-tone')
-    return tokenizer, model
+# import necessary libraries:
+import spacy, string, en_core_web_sm
+import pandas as pd
+from vaderSentiment import vaderSentiment
 
-def summarize_article(text, ratio=0.2):
-    # Initialize the BERT-based summarizer
-    summarizer = Summarizer()
-    
-    # Summarize the article
-    summary = summarizer(text, ratio=ratio)
-    return summary
+# pip install spacy vaderSentiment
 
-def analyze_sentiment(text, tokenizer, model):
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True)
-    outputs = model(**inputs)
-    logits = outputs.logits
-    probabilities = torch.softmax(logits, dim=1).detach().numpy()[0]
-    positive_prob = probabilities[1]  # probability of being positive
-    return positive_prob
+class SentimentAnalyzerService:
+    def __init__(self):
+        self.english = spacy.load("en_core_web_sm")  # load spacy lang
+        self.analyzer = vaderSentiment.SentimentIntensityAnalyzer()  # create analyzer using vaderSentiment
 
-def analyze_all_articles(articles, threshold=0.3):
-    tokenizer, model = load_model_and_tokenizer()
+    def analyze_all_articles(self, article_dicts):
+        for article in article_dicts:
+            if isinstance(article, dict):
+                print("Performing sentiment analysis on reddit posts and comments....")
 
-    sentiment_scores = []
-
-    for idx, article in enumerate(articles, 1):
-        try:
-            headline = article.get("text")
-            if not headline:
-                print(f"Skipping article {idx}: No headline provided.")
-                continue
+                # analyze & store title
+                title_sent = self.analyze(article.get("title", ""))
+             
+                # analyze & store description
+                body_sent = self.analyze(article.get("body", ""))
+                avg_body_sentiment = self.calculate_average_sentiment(body_sent)
             
-            sentiment_score = analyze_sentiment(headline, tokenizer, model)
-            summary = summarize_article(headline)
-            sentiment_scores.append(sentiment_score)
-        except Exception as e:
-            print(f"Error analyzing sentiment for headline '{headline}': {e}")
-            sentiment_scores.append(0)
+                # analyze & store actual article text
+                comments_sent = [self.analyze(comment) for comment in article.get("comments", [])]
+                average_comment_sentiment = self.calculate_average_sentiment(comments_sent[0])
+           
 
-    # Determine overall sentiment score
-    overall_sentiment_score = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else None
+                # calculate the average sentiment scores
+                total_sentiment, label,np,nn,n = self.get_ticker_average_sentiment(title_sent[0], avg_body_sentiment, average_comment_sentiment)
+                
+
+        return total_sentiment, label
+
+    def analyze(self, text):
+        if isinstance(text, list):
+            # If text is a list, analyze each comment separately and return a list of results
+            return [self.analyze(comment) for comment in text]
+        else:
+            # If text is not a list, proceed as before
+            english = spacy.load("en_core_web_sm") 
+            result = english(text)
+            sentences = [str(s) for s in result.sents]  # go thru sentences
+            analyzer = vaderSentiment.SentimentIntensityAnalyzer()  # create analyzer using vaderSentiment
+            sentiment = [analyzer.polarity_scores(str(s)) for s in sentences]
+            return sentiment
     
-    # Determine overall sentiment label
-    if overall_sentiment_score is not None:
-        overall_sentiment_label = "Positive" if overall_sentiment_score >= threshold else "Negative"
-    else:
-        overall_sentiment_label = "Unknown"
-
-    return overall_sentiment_score, overall_sentiment_label, summary
-
+    def calculate_average_sentiment(self, sentiment_list):
+        print("Calculating the average sentiment score for the comments....")
+        # If sentiment_list is empty, return a neutral sentiment
+        if not sentiment_list:
+            return {'neg': 0.0, 'pos': 0.0, 'neu': 0.0, 'compound': 0.0}
+        # Calculate the average sentiment score
+        avg_comment_sentiment = {
+            'neg': sum(score['neg'] for score in sentiment_list) / len(sentiment_list),
+            'pos': sum(score['pos'] for score in sentiment_list) / len(sentiment_list),
+            'neu': sum(score['neu'] for score in sentiment_list) / len(sentiment_list),
+            'compound': sum(score['compound'] for score in sentiment_list) / len(sentiment_list),
+        }
+        return avg_comment_sentiment
+    
+    def get_ticker_average_sentiment(self, title, body, avg_comments):
+        # Calculate the average of each sentiment score across title, body, and comments
+        print("Calculating the average sentiment score for the ticker....")
+        total_sentiment = {
+            'neg': (title['neg'] + body['neg'] + avg_comments['neg'])/3,
+            'pos': (title['pos'] + body['pos'] + avg_comments['pos'])/3,
+            'neu': (title['neu'] + body['neu'] + avg_comments['neu'])/3,
+            'compound': (title['compound'] + body['compound'] + avg_comments['compound'])/3,
+        }
+        np =0
+        nn=0
+        n=0
+        if total_sentiment['compound'] >= 0.0:
+            label = 'bullish'
+            np+=1
+        elif total_sentiment['compound'] < 0.0:
+            label = 'bearish'
+            nn+=1
+        else:
+            label = 'neutral'
+            n+=1
+        return total_sentiment, label , np, nn, n
+        
+        
+        
+        

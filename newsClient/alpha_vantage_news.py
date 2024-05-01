@@ -62,7 +62,7 @@ def ingest_news_to_kafka(ticker, limit):
         producer = Producer(config)
         producer.produce("stocks.news.create", json.dumps(news_data))
         print(f"News for {ticker} ingested successfully!")
-            #producer.flush()
+        producer.flush()
 def ingest_news_from_file():
     # store the news in a json file
     # read from news_GOOG.json
