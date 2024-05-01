@@ -61,6 +61,7 @@ func (c CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Write(b)
 		} else {
+			util.Log.Info().Ctx(ctx).Any("output", output.Output).Msg("marshalling response")
 			resp, err := jsonapi.Marshal(output.Output)
 			if err != nil {
 				util.Log.Error().Ctx(ctx).Err(err).Msg("failed to marshal response")
@@ -79,8 +80,7 @@ func (c CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			encodedResponse.Flush()
 			w.Header().Set("Content-Type", jsonapi.MediaType)
 			w.Write(b.Bytes())
+			w.WriteHeader(http.StatusOK)
 		}
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
