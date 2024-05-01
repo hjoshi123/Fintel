@@ -70,7 +70,7 @@ frontend:
     port: 80
     componentName: react
     envList:
-      - REACT_APP_FETCH_URL
+      - VITE_REACT_APP_FETCH_URL
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
