@@ -14,7 +14,7 @@ backend:
     imagePullSecrets: fintel
     host: finsent.hjoshi.me
     componentName: api
-    tag: v0.0.4
+    tag: v0.0.5
     port: 8080
     envList:
       - db_host
@@ -40,7 +40,7 @@ backend:
     imagePullPolicy: Always
     componentName: pubsub
     imagePullSecrets: fintel
-    tag: v0.0.4
+    tag: v0.0.5
     port: 8081
     envList:
       - db_host

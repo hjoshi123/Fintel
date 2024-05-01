@@ -86,7 +86,14 @@ func (s *StockHelpers) StockNewsCreate(ctx context.Context, msg *models.Message)
 		return err
 	}
 
-	for _, feed := range alphaNews.Feed[:10] {
+	feeds := make([]StockFeed, 0)
+	if len(alphaNews.Feed) > 10 {
+		feeds = alphaNews.Feed[:10]
+	} else {
+		feeds = alphaNews.Feed
+	}
+
+	for _, feed := range feeds {
 		topContent := new(models.TopContent)
 		topContent.Ticker = alphaNews.Ticker
 		topContent.URL = feed.URL
