@@ -66,6 +66,7 @@ frontend:
     replicaCount: 1
     image: registry.digitalocean.com/fintel/frontend
     imagePullPolicy: Always
+    imagePullSecrets: fintel
     tag: v0.0.3
     port: 80
     componentName: react
