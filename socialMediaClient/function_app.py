@@ -16,9 +16,9 @@ def socialmedia(req: func.HttpRequest) -> func.HttpResponse:
 
     if not sub or not ticker or not company or not time_from:
         sub = "wallstreetbets"
-        ticker="NVDA"
-        company = "Nvidia"
-        time_from = "day"
+        ticker="TSLA"
+        company = "Tesla"
+        time_from = "week"
 
     result = run(sub, ticker, company, time_from)
     with open('reddit_data.json', 'w') as f: 

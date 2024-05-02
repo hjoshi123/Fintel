@@ -15,7 +15,6 @@ class SentimentAnalyzerService:
     def analyze_all_articles(self, article_dicts):
         for article in article_dicts:
             if isinstance(article, dict):
-                print("Performing sentiment analysis on reddit posts and comments....")
 
                 # analyze & store title
                 title_sent = self.analyze(article.get("title", ""))
@@ -49,7 +48,6 @@ class SentimentAnalyzerService:
             return sentiment
     
     def calculate_average_sentiment(self, sentiment_list):
-        print("Calculating the average sentiment score for the comments....")
         # If sentiment_list is empty, return a neutral sentiment
         if not sentiment_list:
             return {'neg': 0.0, 'pos': 0.0, 'neu': 0.0, 'compound': 0.0}
@@ -64,7 +62,6 @@ class SentimentAnalyzerService:
     
     def get_ticker_average_sentiment(self, title, body, avg_comments):
         # Calculate the average of each sentiment score across title, body, and comments
-        print("Calculating the average sentiment score for the ticker....")
         total_sentiment = {
             'neg': (title['neg'] + body['neg'] + avg_comments['neg'])/3,
             'pos': (title['pos'] + body['pos'] + avg_comments['pos'])/3,
